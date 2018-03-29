@@ -289,4 +289,9 @@ class Service_Pattern
         
         
     }
+    
+    public static function deletePatternByName($name)
+    {
+        Model_Pattern::deleteByName($name);
+    }
 }

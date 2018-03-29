@@ -175,3 +175,9 @@ Route::set('get_query', '(getFromQueue(/<id>))')
 	    'controller' => 'welcome',
 	    'action'     => 'getFromQueue',
 	));
+	
+Route::set('deletePattern', '(deletePattern(/<id>))')
+	->defaults(array(
+	    'controller' => 'welcome',
+	    'action'     => 'deletePattern',
+	));

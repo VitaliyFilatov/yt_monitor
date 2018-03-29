@@ -1,6 +1,6 @@
 <?php defined('SYSPATH') or die('No direct script access.');
  
-class Model_PatternVideo extends ORM
+class Model_PatternVideo extends Model_PatternChild
 {
 	protected $_table_name = 'pattern_video';
 	protected $_primary_key = 'id';
@@ -10,5 +10,9 @@ class Model_PatternVideo extends ORM
 			'foreign_key' => 'pattern_id',
 			),
 		);
+	
+	protected $foreign_key = 'pattern_id';
+	
+	
 	
 }

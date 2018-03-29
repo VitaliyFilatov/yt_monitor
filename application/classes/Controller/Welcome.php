@@ -66,89 +66,101 @@ class Controller_Welcome extends Controller {
 	
 	public function action_putToQueue()
 	{
-// 	    $MEMSIZE = 512; //  объём выделяемой разделяемой памяти
-// 	    $SEMKEY = 1;   //  ключ семафора
-// 	    $SHMKEY = 2;   //  ключ разделяемой памяти
-	    
-// 	    $sem_id = sem_get($SEMKEY, 1);
-	    
-// 	    if (! sem_acquire($sem_id))
-// 	    {
-// 	        sem_remove($sem_id);
-// 	        exit;
-// 	    }
-	    
-// 	    $shm_id = shm_attach($SHMKEY, $MEMSIZE);
-// 	    if ($shm_id === false)
-// 	    {
-// 	        sem_remove($sem_id);
-// 	        exit;
-// 	    }
-	    
-// 	    if (!shm_put_var($shm_id, 1, "msg"))
-// 	    {
-// 	        sem_remove($sem_id);
-// 	        shm_remove($shm_id);
-// 	        exit;
-// 	    }
-	    
-	    
-// 	    //shm_remove_var($shm_id, 1);
-	    
-// 	    while(shm_has_var ($shm_id, 1)){}
-	    
-// 	    sem_release($sem_id);
-// 	    sem_remove($sem_id);
-// 	    shm_remove($shm_id);
-// 	    echo "end";
-
-
+	    $MEMSIZE = 512; //  объём выделяемой разделяемой памяти
 	    $SEMKEY = 1;   //  ключ семафора
-
+	    $SHMKEY = 2;   //  ключ разделяемой памяти
+	    
 	    $sem_id = sem_get($SEMKEY, 1);
+	    
+	    if (! sem_acquire($sem_id))
+	    {
+	        sem_remove($sem_id);
+	        exit;
+	    }
+	    
+	    $shm_id = shm_attach($SHMKEY, $MEMSIZE);
+	    if ($shm_id === false)
+	    {
+	        sem_remove($sem_id);
+	        exit;
+	    }
+	    
+	    if (!shm_put_var($shm_id, 1, "msg"))
+	    {
+	        sem_remove($sem_id);
+	        shm_remove($shm_id);
+	        exit;
+	    }
+	    
+	    if (!shm_put_var($shm_id, 1, "new"))
+	    {
+	        sem_remove($sem_id);
+	        shm_remove($shm_id);
+	        exit;
+	    }
+	    
+	    
+	    //shm_remove_var($shm_id, 1);
+	    
+	    while(shm_has_var ($shm_id, 1)){}
+	    
+	    sem_release($sem_id);
+	    sem_remove($sem_id);
+	    shm_remove($shm_id);
+	    echo "end";
 
-	    if (!sem_acquire($sem_id))
-    	{
-    	    echo "int put sem don't acquire";
-    	}
-    	else
-    	{
-    	    echo "in put sem successful acquire";
-    	}
-    	while (true){}
+
+// 	    $SEMKEY = 1;   //  ключ семафора
+
+// 	    $sem_id = sem_get($SEMKEY, 1);
+
+// 	    if (!sem_acquire($sem_id))
+//     	{
+//     	    echo "int put sem don't acquire";
+//     	}
+//     	else
+//     	{
+//     	    echo "in put sem successful acquire";
+//     	}
+//     	while (true){}
     	
 	    
 	}
 	
 	public function action_getFromQueue()
 	{
-// 	    $MEMSIZE = 512; //  объём выделяемой разделяемой памяти
-// 	    $SEMKEY = 1;   //  ключ семафора
-// 	    $SHMKEY = 2;   //  ключ разделяемой памяти
+	    $MEMSIZE = 512; //  объём выделяемой разделяемой памяти
+	    $SEMKEY = 1;   //  ключ семафора
+	    $SHMKEY = 2;   //  ключ разделяемой памяти
 	    
 	    
-// 	    $shm_id = shm_attach($SHMKEY, $MEMSIZE);
-// 	    if ($shm_id === false)
-// 	    {
-// 	        exit;
-// 	    }
-// 	    $var = shm_get_var ($shm_id, 1);
-// 	    echo $var;
-// 	    shm_remove_var ($shm_id, 1);
-// 	    shm_remove($shm_id);
+	    $shm_id = shm_attach($SHMKEY, $MEMSIZE);
+	    if ($shm_id === false)
+	    {
+	        exit;
+	    }
+	    $var = shm_get_var ($shm_id, 1);
+	    echo $var;
+	    shm_remove_var ($shm_id, 1);
+	    shm_remove($shm_id);
 
-        $SEMKEY = 1;   //  ключ семафора
+//         $SEMKEY = 1;   //  ключ семафора
         
-        $sem_id = sem_get($SEMKEY, 1);
+//         $sem_id = sem_get($SEMKEY, 1);
         
-        if (!sem_acquire($sem_id))
-        {
-            echo "int get sem don't acquire";
-        }
-        else
-        {
-            echo "in get sem successful acquire";
-        }
+//         if (!sem_acquire($sem_id))
+//         {
+//             echo "int get sem don't acquire";
+//         }
+//         else
+//         {
+//             echo "in get sem successful acquire";
+//         }
+	}
+	
+	public function action_deletePattern()
+	{
+	    Service_Pattern::deletePatternByName('Направление');
 	}
 
 } // End Welcome
