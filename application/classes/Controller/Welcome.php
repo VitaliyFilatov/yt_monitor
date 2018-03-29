@@ -49,18 +49,8 @@ class Controller_Welcome extends Controller {
 	    $session = Session::instance();
 	    //protected $OAUTH2_CLIENT_ID = '1067254332521-4o8abvtsaj2sihjbj82qfa17j1vg8l6r.apps.googleusercontent.com';
 	    //protected $OAUTH2_CLIENT_SECRET = 'oMbF7Zj1K9cCVXw3ZVGFN5z-';
-	    $apiServicre = new Service_YTApi('1067254332521-4o8abvtsaj2sihjbj82qfa17j1vg8l6r.apps.googleusercontent.com',
-	        'oMbF7Zj1K9cCVXw3ZVGFN5z-');
-	    try
-	    {
-	        $apiServicre->authorize($request, $session);
-	        $htmlBody = $apiServicre->getChannelsVideo($session);
-	        echo $htmlBody;
-	    }
-	    catch(Exception $e)
-	    {
-	        $e=$e;
-	    }
+	    $result = Service_Pattern::analizeChannel($request, $session);
+	    $result = $result;
 	    
 	}
 	

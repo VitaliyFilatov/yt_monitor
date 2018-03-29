@@ -71,11 +71,35 @@ class Service_YTApi
                 //$listResponse = $youtube->channels->listChannels('brandingSettings', array('mine' => true));
                 //$response = $youtube->channels->listChannels('invideoPromotion', array('id' => 'UC6zOnSAtJzz166Y5B7tImNA'));
                 //$response = $youtube->videos->listVideos('contentDetails', array('id' => 'MHjrim3TdVE'));
-                $response = $this->youtube->search->listSearch('snippet', array('maxResults' => 10, 'channelId' => 'UChFcVtxhHg7uED8osbCsYhw'));
-                $videoId = $response->items[0]->id->videoId;
+                $videoIds = array();
+                $pageToken = '';
+               
+                do
+                {
+                    $response = $this->youtube->search->listSearch('snippet', array('maxResults' => 50,
+                        'channelId' => 'UChFcVtxhHg7uED8osbCsYhw',
+                        'pageToken' => $pageToken
+                    ));
+                    
+                    foreach($response->items as $item)
+                    {
+                        array_push($videoIds, $response->items[0]->id->videoId);
+                    }
+                    
+                    if(isset($response->nextPageToken))
+                    {
+                        $pageToken = $response->nextPageToken;
+                    }
+                }
+                while(isset($response->nextPageToken));
+                
+                
+                
+                //$response->items[0]->id->videoId
+                
                 //$subtitle = getSubtitleByVideId($videoId);
                 //$subtitle = $subtitle;
-                $htmlBody = $videoId;
+                $htmlBody = $videoIds;
                 
             } catch (Google_Service_Exception $e) {
                 $htmlBody = sprintf('<p>A service error occurred: <code>%s</code></p>',

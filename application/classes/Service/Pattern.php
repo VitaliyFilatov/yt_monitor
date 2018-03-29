@@ -266,6 +266,9 @@ class Service_Pattern
         }
         $results = $this->getStatistics($wordsstat);
         $diff = $this->getDifferentInWordParts($genWords, $results);
+        
+        Service_Pattern::deletePatternByName($patternName);
+        
         $pattern = ORM::factory('Pattern');
         $pattern->name = $patternName;
         $pattern->save();
@@ -293,5 +296,22 @@ class Service_Pattern
     public static function deletePatternByName($name)
     {
         Model_Pattern::deleteByName($name);
+    }
+    
+    public static function analizeChannel($request, $session)
+    {
+        $apiServicre = new Service_YTApi('1067254332521-4o8abvtsaj2sihjbj82qfa17j1vg8l6r.apps.googleusercontent.com',
+            'oMbF7Zj1K9cCVXw3ZVGFN5z-');
+        try
+        {
+            $apiServicre->authorize($request, $session);
+            $htmlBody = $apiServicre->getChannelsVideo($session);
+            return $htmlBody;
+        }
+        catch(Exception $e)
+        {
+            return $e->getMessage();
+            $e=$e;
+        }
     }
 }
