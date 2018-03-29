@@ -34,7 +34,7 @@ class Controller_Welcome extends Controller {
 
 	    $servicePattern = new Service_Pattern();
 	    
-	    $servicePattern->createPattern('Направление', array('t-sHiUNxiOA', 'XQOPaBSR0N0'));
+	    $servicePattern->createPattern('Призыв к революции', array('qrUwj-81ycU', 'CDeZRueiR-U'));
 // 	    $pattern = ORM::factory('Pattern', 1);
 // 	    $videos =  $pattern->video->find_all();
 // 	    foreach($videos as $video)
@@ -50,7 +50,7 @@ class Controller_Welcome extends Controller {
 	    //protected $OAUTH2_CLIENT_ID = '1067254332521-4o8abvtsaj2sihjbj82qfa17j1vg8l6r.apps.googleusercontent.com';
 	    //protected $OAUTH2_CLIENT_SECRET = 'oMbF7Zj1K9cCVXw3ZVGFN5z-';
 	    $result = Service_Pattern::analizeChannel($request, $session);
-	    $result = $result;
+	    echo $result;
 	    
 	}
 	
@@ -151,6 +151,11 @@ class Controller_Welcome extends Controller {
 	public function action_deletePattern()
 	{
 	    Service_Pattern::deletePatternByName('Направление');
+	}
+	
+	public function action_getPatternById()
+	{
+	    Service_Pattern::getPatternById(13);
 	}
 
 } // End Welcome

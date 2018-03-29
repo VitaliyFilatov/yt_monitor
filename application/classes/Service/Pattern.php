@@ -3,7 +3,7 @@ defined('SYSPATH') or die('No direct script access.');
 
 class Service_Pattern
 {
-    protected function getSubtitleByVideId($videoId)
+    protected static function getSubtitleByVideId($videoId)
     {
         //request on getting link for download file with subtitle of video by id
         $ch = curl_init();
@@ -63,7 +63,7 @@ class Service_Pattern
     }
     
     
-    protected function getContentAnaliz($text, $strdelimeter='\n', $itemdelimeter=' ')
+    protected static function getContentAnaliz($text, $strdelimeter='\n', $itemdelimeter=' ')
     {
         $ch = curl_init();
         
@@ -121,7 +121,7 @@ class Service_Pattern
     
     
     //result function - array: word => part of this word in text
-    function parseContentAnalize($text, $strdelimeter='\n', $itemdelimeter = ' ')
+    static function parseContentAnalize($text, $strdelimeter='\n', $itemdelimeter = ' ')
     {
         $words = explode($strdelimeter, $text);
         $wordsstat=array();
@@ -144,7 +144,7 @@ class Service_Pattern
         return $wordsstat;
     }
     
-    function getStatistics($arrayStats)
+    static function getStatistics($arrayStats)
     {
         $result = array();
         $wordsCount = 0;
@@ -227,6 +227,38 @@ class Service_Pattern
         
         return 1 - $dif / $maxDif;
     }
+    
+    public static function getSimilarityWithPattern($pattern, $resCA)
+    {
+        $dif = 0;
+        $maxDif = 0;
+        $i = 0;
+        $freq;
+        //$pattern->words[1]["word"];
+        foreach($pattern->words as $words)
+        {
+            
+            if(!array_key_exists($words["word"], $resCA))
+            {
+                $freq = 0;
+            }
+            else
+            {
+                $freq = $resCA[$words["word"]];
+            }
+            //$dif[$i] = pow($freq - $pattern[$key], 2) * $pattern[$key] * $diff[$key];
+            $var = pow($freq - $words["frequency"], 2);
+            $var = pow($freq - $words["frequency"], 2) * $words["frequency"];
+            $var = pow($freq - $words["frequency"], 2) * $words["frequency"] * $words["dif_frequency"];
+            $var = pow($words["frequency"],3);
+            $var = pow($words["frequency"],3) * $words["dif_frequency"];
+            $dif += pow($freq - $words["frequency"], 2) * $words["frequency"] * $words["dif_frequency"];
+            $maxDif += pow($words["frequency"],3) * $words["dif_frequency"];
+            $i++;
+        }
+        
+        return 1 - $dif / $maxDif;
+    }
 
     function createPattern($patternName, $videoIds)
     {
@@ -298,6 +330,21 @@ class Service_Pattern
         Model_Pattern::deleteByName($name);
     }
     
+    public static function analizeVideo($videoId, $pattern)
+    {
+        $subtitle = Service_Pattern::getSubtitleByVideId($videoId);
+        $resCA = Service_Pattern::getStatistics(array(Service_Pattern::parseContentAnalize(Service_Pattern::getContentAnaliz($subtitle))));
+        return Service_Pattern::getSimilarityWithPattern($pattern, $resCA);
+    }
+    
+    public static function getPatternById($id)
+    {
+        $pattern = new Pattern($id);
+        $word1 = $pattern->words[0]["word"];
+        $word2 = $pattern->words[1]["word"];
+        $word1 = $word1;
+    }
+    
     public static function analizeChannel($request, $session)
     {
         $apiServicre = new Service_YTApi('1067254332521-4o8abvtsaj2sihjbj82qfa17j1vg8l6r.apps.googleusercontent.com',
@@ -306,7 +353,15 @@ class Service_Pattern
         {
             $apiServicre->authorize($request, $session);
             $htmlBody = $apiServicre->getChannelsVideo($session);
-            return $htmlBody;
+            if($htmlBody['return_type'] == 1)
+            {
+                echo $htmlBody['result'];
+            }
+            else 
+            {
+                echo Service_Pattern::analizeVideo($htmlBody['result'][0], new Pattern(13)) . " ";
+                echo Service_Pattern::analizeVideo($htmlBody['result'][1], new Pattern(13));
+            }
         }
         catch(Exception $e)
         {

@@ -181,3 +181,9 @@ Route::set('deletePattern', '(deletePattern(/<id>))')
 	    'controller' => 'welcome',
 	    'action'     => 'deletePattern',
 	));
+	
+Route::set('getPatternById', '(getPatternById(/<id>))')
+	->defaults(array(
+	    'controller' => 'welcome',
+	    'action'     => 'getPatternById',
+	));

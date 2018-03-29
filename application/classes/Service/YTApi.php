@@ -52,6 +52,21 @@ class Service_YTApi
         if ($session->get($this->tokenSessionKey) !== NULL) {
             $this->client->setAccessToken($session->get($this->tokenSessionKey));
         }
+        
+//         if (!$this->client->getAccessToken())
+//         {
+//             $state = mt_rand();
+//             $this->client->setState($state);
+//             $session->set('state', $state);
+            
+//             $authUrl = $this->client->createAuthUrl();
+//             $htmlBody = '<h3>Authorization Required</h3><p>You need to <a href=' . $authUrl . '>authorize access</a> before proceeding.<p>';
+//             return $htmlBody;
+//         }
+//         else
+//         {
+//             $session->set($this->tokenSessionKey, $this->client->getAccessToken());
+//         }
     }
     
     public function getChannelsVideo($session)
@@ -99,7 +114,7 @@ class Service_YTApi
                 
                 //$subtitle = getSubtitleByVideId($videoId);
                 //$subtitle = $subtitle;
-                $htmlBody = $videoIds;
+                $htmlBody = array('return_type' => 0, 'result' => $videoIds);
                 
             } catch (Google_Service_Exception $e) {
                 $htmlBody = sprintf('<p>A service error occurred: <code>%s</code></p>',
@@ -120,6 +135,7 @@ class Service_YTApi
             
             $authUrl = $this->client->createAuthUrl();
             $htmlBody = '<h3>Authorization Required</h3><p>You need to <a href=' . $authUrl . '>authorize access</a> before proceeding.<p>';
+            $htmlBody = array('return_type' => 1, 'result' => $htmlBody);
         }
         return $htmlBody;
     }
