@@ -146,6 +146,8 @@ Cookie::$salt = "salt";
  * Set the routes. Each route must have a minimum of a name, a URI and a set of
  * defaults for the URI.
  */
+
+
 Route::set('default', '(test(/<id>))')
 	->defaults(array(
 		'controller' => 'welcome',
@@ -154,10 +156,10 @@ Route::set('default', '(test(/<id>))')
 	
 Route::set('create_pattern', '(createPattern(/<id>))')
 	->defaults(array(
-	    'controller' => 'welcome',
-	    'action'     => 'createPattern',
+			'controller' => 'welcome',
+			'action'     => 'createPattern',
 	));
-	
+		
 Route::set('use_api', '(useApi(/<id>))')
 	->defaults(array(
 	    'controller' => 'welcome',
@@ -187,3 +189,16 @@ Route::set('getPatternById', '(getPatternById(/<id>))')
 	    'controller' => 'welcome',
 	    'action'     => 'getPatternById',
 	));
+	
+Route::set('getAllPatterns', '(getAllPatterns(/<id>))')
+	->defaults(array(
+			'controller' => 'welcome',
+			'action'     => 'getAllPatterns',
+	));
+
+Route::set('getSubResult', '(getSubResult(/<id>))')
+	->defaults(array(
+			'controller' => 'welcome',
+			'action'     => 'getSubResult',
+	));
+	

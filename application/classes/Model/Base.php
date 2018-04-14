@@ -6,7 +6,14 @@ class Model_Base extends ORM {
     
     protected static $modelname;
     
+    protected static $tablename;
     
+    public static function selectAllRecords()
+    {
+    	$sql = "SELECT `id` FROM `" . static::$tablename . "`;";
+    	$query = $query = DB::query(Database::SELECT, $sql);
+    	return $query->execute()->as_array(NULL, 'id');
+    }
     
     public static function deleteById($id)
     {

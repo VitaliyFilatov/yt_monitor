@@ -3,6 +3,8 @@
 class Model_Pattern extends Model_Base
 {
 	protected $_table_name = 'pattern';
+	
+	protected static $tablename = 'pattern';
 	protected $_primary_key = 'id';
 	
 	protected $_has_many = array(
@@ -17,9 +19,6 @@ class Model_Pattern extends Model_Base
     );
 	
 	protected static $model = 'Pattern';
-	
-	
-	
 	
 	
 	public static function deleteByName($name)

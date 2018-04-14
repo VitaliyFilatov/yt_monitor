@@ -2,6 +2,7 @@
 
 class Controller_Welcome extends Controller {
 
+	
 	public function action_index()
 	{
 		$this->response->body('hello, world!');
@@ -13,8 +14,10 @@ class Controller_Welcome extends Controller {
 		//echo $trial->id;
 		//echo $trial->uname;
 		//echo $trial->trial_table->some_field;
-		$pattern = new Pattern(1);
-	    $this->response->body($pattern->words[0]["word"]);
+		//$pattern = new Pattern(1);
+	    //$this->response->body($pattern->words[0]["word"]);
+		//$this->template->styles = array('js/prepare.js'=>'screen');
+		$this->response->body(View::factory('Prepare'));
 	}
 	
 	public function action_createPattern()
@@ -32,15 +35,33 @@ class Controller_Welcome extends Controller {
 // 	    $video->pattern_id = $pattern->id;
 // 	    $video->save();
 
+		$body = $this->request->post();
+		$patternName = $body['patternName'];
+		$videoIds = $body['videoIds'];
+		$videoIds = explode(",",$videoIds);
 	    $servicePattern = new Service_Pattern();
 	    
-	    $servicePattern->createPattern('Призыв к революции', array('qrUwj-81ycU', 'CDeZRueiR-U'));
+	    $queue = new Service_Queue(512, 1, 1);
+	    
+	    $pattern = $servicePattern->createPattern($patternName, $videoIds, $queue);
+	    echo json_encode($pattern);
 // 	    $pattern = ORM::factory('Pattern', 1);
 // 	    $videos =  $pattern->video->find_all();
 // 	    foreach($videos as $video)
 // 	    {
 // 	        echo $video->video_id;
 // 	    }
+	}
+	
+	public function action_getSubResult()
+	{
+		$queue = new Service_Queue(512, 1, 1);
+		$subResult;
+		while($subResult == "")
+		{
+			$subResult = $queue->popFromQueue();
+		}
+		echo $subResult;
 	}
 	
 	public function action_useApi()
@@ -156,6 +177,11 @@ class Controller_Welcome extends Controller {
 	public function action_getPatternById()
 	{
 	    Service_Pattern::getPatternById(13);
+	}
+	
+	public function action_getAllPatterns()
+	{
+		echo json_encode(Pattern::getAllPatterns());
 	}
 
 } // End Welcome

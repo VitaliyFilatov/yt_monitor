@@ -67,6 +67,9 @@ class Service_Pattern
     {
         $ch = curl_init();
         
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+        
         curl_setopt($ch, CURLOPT_URL, 'https://istio.com/rus/text/analyz#top');
         
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -91,6 +94,12 @@ class Service_Pattern
         
         
         $res = curl_exec($ch);
+        if($res == false)
+        {
+        	$err = curl_error($ch);
+        	$errno = curl_errno($ch);
+        	$errno = $errno;
+        }
         curl_close($ch);
         $output = gzdecode($res);
         $dom = new DOMDocument();
@@ -260,7 +269,7 @@ class Service_Pattern
         return 1 - $dif / $maxDif;
     }
 
-    function createPattern($patternName, $videoIds)
+    function createPattern($patternName, $videoIds, $queue)
     {
 //         $pattern = ORM::factory('Pattern');
 //         $pattern->name = 'Новая категория';
@@ -269,14 +278,16 @@ class Service_Pattern
 //         $video->video_id = '1234567890';
 //         $video->pattern_id = $pattern->id;
 //         $video->save();
-        $genWords = $this->getGeneralWords("/home/vitaliy/Загрузки/lemma.num");
+        $genWords = $this->getGeneralWords("C:\\Server\\data\\htdocs\\yt_monitor\\files\\lemma.num");
         $videoIdsWithSubtls = array();
 //         $pattern = ORM::factory('Pattern');
 //         $pattern->name = $patternName;
 //         $pattern->save();
         $wordsstat = array();
+        $i=0;
         foreach($videoIds as $videoId)
         {
+        	$i++;
             $subtitle = $this->getSubtitleByVideId($videoId);
             array_push($wordsstat, $this->parseContentAnalize($this->getContentAnaliz($subtitle)));
             array_push($videoIdsWithSubtls, $videoId);
@@ -294,6 +305,7 @@ class Service_Pattern
 //                 $words->pattern_id = $pattern->id;
 //                 $words->save();
 //             }
+			$queue->pushToQueue(round($i/count($videoIds)*100));
             
         }
         $results = $this->getStatistics($wordsstat);
@@ -322,7 +334,7 @@ class Service_Pattern
             $words->save();
         }
         
-        
+        return array('patternId' => $pattern->id, 'patternName' => $patternName);
     }
     
     public static function deletePatternByName($name)
@@ -369,4 +381,5 @@ class Service_Pattern
             $e=$e;
         }
     }
+    
 }
