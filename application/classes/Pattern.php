@@ -17,7 +17,7 @@ class Pattern extends Entity_Pattern
 		$result = array();
 		foreach($items as $item)
 		{
-			array_push($result, new self($item));
+			array_push($result, new self($item, true));
 		}
 		return $result;
 	}

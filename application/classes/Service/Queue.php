@@ -76,8 +76,76 @@ class Service_Queue
 		$this->SEMKEY = $semkey;
 		$this->SHMKEY = $shmkey;
 		
-		//get id of semaphore
 		$this->semId = sem_get($this->SEMKEY, 1);
+		
+		
+		
+	}
+	
+	public function init()
+	{
+		$this->semId = sem_get($this->SEMKEY, 1);
+		
+		$flag = sem_release($this->semId);
+		
+		if (!sem_acquire($this->semId))
+		{
+			$this->clear();
+			throw new Exception();
+		}
+		
+		// Create 100 byte shared memory block with system id of 0xff3
+		$this->shmId = shmop_open($this->SHMKEY, "c", 0644, $this->MEMSIZE);
+		if (!$this->shmId) {
+			$this->clear();
+			throw new Exception();
+		}
+		
+		
+		// Lets write a test string into shared memory
+		$shm_bytes_written = shmop_write($this->shmId, "101", 0);
+		if ($shm_bytes_written != strlen("101")) {
+			$this->clear();
+			throw new Exception();
+		}
+		
+		
+		shmop_close($this->shmId);
+		
+		sem_release($this->semId);
+	}
+	
+	public function initResAnalyze()
+	{
+		$this->semId = sem_get($this->SEMKEY, 1);
+		
+		$flag = sem_release($this->semId);
+		
+		if (!sem_acquire($this->semId))
+		{
+			$this->clear();
+			throw new Exception();
+		}
+		
+		// Create 100 byte shared memory block with system id of 0xff3
+		$this->shmId = shmop_open($this->SHMKEY, "c", 0644, $this->MEMSIZE);
+		if (!$this->shmId) {
+			$this->clear();
+			throw new Exception();
+		}
+		
+		
+		// Lets write a test string into shared memory
+		$shm_bytes_written = shmop_write($this->shmId, "????????????????", 0);
+		if ($shm_bytes_written != strlen("????????????????")) {
+			$this->clear();
+			throw new Exception();
+		}
+		
+		
+		shmop_close($this->shmId);
+		
+		sem_release($this->semId);
 	}
     
     public function clear()
@@ -106,6 +174,42 @@ class Service_Queue
     		throw new Exception();
     	}
     	
+    	// Lets write a test string into shared memory
+    	while(strlen($value) < 3)
+    	{
+    		$value = "0" . $value;
+    	}
+    	$shm_bytes_written = shmop_write($this->shmId, $value, 0);
+    	if ($shm_bytes_written != strlen($value)) {
+    		$this->clear();
+    		throw new Exception();
+    	}
+    	
+    	
+    	shmop_close($this->shmId);
+    	
+    	sem_release($this->semId);
+    }
+    
+    
+    public function pushResAnalyze($value)
+    {
+    	//get id of semaphore
+    	$this->semId = sem_get($this->SEMKEY, 1);
+    	
+    	
+    	if (!sem_acquire($this->semId))
+    	{
+    		$this->clear();
+    		throw new Exception();
+    	}
+    	
+    	// Create 100 byte shared memory block with system id of 0xff3
+    	$this->shmId = shmop_open($this->SHMKEY, "c", 0644, $this->MEMSIZE);
+    	if (!$this->shmId) {
+    		$this->clear();
+    		throw new Exception();
+    	}
     	
     	// Lets write a test string into shared memory
     	$shm_bytes_written = shmop_write($this->shmId, $value, 0);
@@ -115,7 +219,7 @@ class Service_Queue
     	}
     	
     	
-    	shmop_close($shm_id);
+    	shmop_close($this->shmId);
     	
     	sem_release($this->semId);
     }
@@ -151,6 +255,46 @@ class Service_Queue
         
 //         sem_release($this->semId);
 //     }
+
+	public function popResAnalyze()
+	{
+		//get id of semaphore
+		$this->semId = sem_get($this->SEMKEY, 1);
+		
+		
+		if (!sem_acquire($this->semId))
+		{
+			$this->clear();
+			throw new Exception();
+		}
+		
+		// Create 100 byte shared memory block with system id of 0xff3
+		$this->shmId = shmop_open($this->SHMKEY, "c", 0644, $this->MEMSIZE);
+		if (!$this->shmId) {
+			$this->clear();
+			throw new Exception();
+		}
+		// Get shared memory block's size
+		$shm_size = shmop_size($this->shmId);
+		
+		// Now lets read the string back
+		$result = shmop_read($this->shmId, 0, 16);//3 digit of number
+		if (!$result) {
+			$this->clear();
+			throw new Exception();
+		}
+		
+		//Now lets delete the block and close the shared memory segment
+		if (!shmop_delete($this->shmId)) {
+			$this->clear();
+			throw new Exception();
+		}
+		shmop_close($this->shmId);
+		
+		sem_release($this->semId);
+		
+		return $result;
+	}
     
     public function popFromQueue()
     {
@@ -174,7 +318,7 @@ class Service_Queue
     	$shm_size = shmop_size($this->shmId);
     	
     	// Now lets read the string back
-    	$result = shmop_read($this->shmId, 0, $shm_size);
+    	$result = shmop_read($this->shmId, 0, 3);//3 digit of number
     	if (!$result) {
     		$this->clear();
     		throw new Exception();

@@ -9,6 +9,8 @@ var patternList = $("#patternList")[0];
 var saveProgress = $("#saveProgress")[0];
 var saveProgressWidthClass="";
 var patterns;
+var oldValue = 0;
+var editedPattern;
 
 var subResult=false;
 
@@ -36,10 +38,12 @@ function onCancelBtnClick()
     mainPanel.classList.add("w-50");
     mainPanel.classList.add("mx-auto");
     editPanel.classList.add("display-none");
+    saveProgress.parentElement.classList.add("display-none");
 }
 
 function onSaveBtnClick()
 {
+    saveProgress.parentElement.classList.remove("display-none");
     subResult = true;
     $.ajax({
         url: "createPattern?XDEBUG_SESSION_START=ECLIPSE_DBGP",
@@ -49,19 +53,32 @@ function onSaveBtnClick()
         error: function(jqXHR, textStatus, errorThrown )
         {
             console.log("error: " + errorThrown);
+            subResult = false;
+            oldValue = 0;
+            saveProgress.parentElement.classList.add("display-none");
         },
         success: function(data, textStatus, jqXHR )
         {
             subResult = false;
+            oldValue = 0;
+            saveProgress.parentElement.classList.add("display-none");
+            if(data == false)
+            {
+                return;
+            }
             data = JSON.parse(data);
             //console.log("success: " + data.patternName);
             var li = document.createElement("li");
             li.classList.add("list-group-item");
-            li.innerHTML = '<div style="display:none">' + data.patternId + '</div>' +
-                '<div class="row"><div class="col-sm-10">' + data.patternName + 
-                    '</div><div class="col-sm-2"><button id="editPatternBtn' + data.patternId +
+            li.id = "id" + data.id;
+            li.innerHTML = '<div class="row"><div class="col-sm-9">' + data.name + 
+                    '</div><div class="col-sm-3"><button id="editPatternBtn' + data.id +
+                '" type="button" class="btn" style="background-color:transparent"><img src="media/png/glyphicons-236-pen.png" width="20"/></button><button id="removePatternBtn' + data.id +
                 '" type="button" class="btn" style="background-color:transparent"><img src="media/png/glyphicons-208-remove.png" width="20"/></button></div></div>';
+            var el = $("#id" + editedPattern.id)[0];
+            el.remove();
             patternList.appendChild(li);
+            patterns.push(data);
         }
     });
     
@@ -72,24 +89,30 @@ function getSubResultSavePattern()
 {
     $.ajax({
         url: "getSubResult?XDEBUG_SESSION_START=ECLIPSE_DBGP",
-        type: "GET",
+        type: "POST",
+        data: {oldValue : oldValue},
         error: function(jqXHR, textStatus, errorThrown )
         {
             console.log("error: " + errorThrown);
         },
         success: function(data, textStatus, jqXHR )
         {
-            if(saveProgressWidthClass != "")
+            console.log("data: "+data);
+            oldValue = data;
+            if(oldValue != 101)
             {
-                saveProgress.classList.remove(saveProgressWidthClass); 
+                if(saveProgressWidthClass != "")
+                {
+                    saveProgress.classList.remove(saveProgressWidthClass); 
+                }
+                data = Math.round(data/5.0);
+                data *= 5;
+                saveProgress.classList.add("w-" + data);
+                saveProgressWidthClass = "w-" + data;
             }
-            data = Math.round(data/5.0);
-            data *= 5;
-            saveProgress.classList.add("w-" + data);
-            saveProgressWidthClass = "w-" + data;
             if(subResult)
             {
-                getSubResultSavePattern();
+                setTimeout(getSubResultSavePattern, 500);
             }
         }
     });
@@ -105,6 +128,7 @@ function onEditPatternBtnClick()
         alert("Паттерн не найден");
         return;
     }
+    editedPattern = pattern;
     patternNameInput.value = pattern.name;
     var videos = pattern.video;
     videoIdsInput.value = "";
@@ -138,9 +162,10 @@ function onStartPage()
                 var li = document.createElement("li");
                 li.classList.add("list-group-item");
                 li.id = "id" + data[i].id;
-                li.innerHTML = '<div class="row"><div class="col-sm-10">' + data[i].name + 
-                        '</div><div class="col-sm-2"><button id="editPatternBtn' + data[i].id +
-                    '" type="button" class="btn" style="background-color:transparent"><img src="media/png/glyphicons-236-pen.png" width="20"/></button></div></div>';
+                li.innerHTML = '<div class="row"><div class="col-sm-9">' + data[i].name + 
+                        '</div><div class="col-sm-3"><button id="editPatternBtn' + data[i].id +
+                    '" type="button" class="btn" style="background-color:transparent"><img src="media/png/glyphicons-236-pen.png" width="20"/></button><button id="removePatternBtn' + data[i].id +
+                '" type="button" class="btn" style="background-color:transparent"><img src="media/png/glyphicons-208-remove.png" width="20"/></button></div></div>';
                 patternList.appendChild(li);
                 $("#editPatternBtn" + data[i].id)[0].addEventListener("click",onEditPatternBtnClick);
             }

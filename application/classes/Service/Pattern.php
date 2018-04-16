@@ -8,8 +8,13 @@ class Service_Pattern
         //request on getting link for download file with subtitle of video by id
         $ch = curl_init();
         
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+        
         curl_setopt($ch, CURLOPT_URL, "http://www.yousubtitles.com/loadvideo/ch--" . $videoId);
         
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT ,0);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 400);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_HTTPHEADER, array(
             'Accept:application/json, text/javascript, */*; q=0.01',
@@ -25,10 +30,17 @@ class Service_Pattern
         
         $output = curl_exec($ch);
         curl_close($ch);
-        $output = gzdecode($output);
+        try 
+        {
+        	$output = gzdecode($output);
+        }
+        catch(Exception $e)
+        {
+        	return array('type'=>0, 'result'=>0);
+        }
         if($output === false)
         {
-            return false;
+        	return array('type'=>0, 'result'=>0);
         }
         $response = json_decode($output);
         //'load' is field from json
@@ -46,6 +58,12 @@ class Service_Pattern
         
         curl_setopt($ch, CURLOPT_URL, $downloadlink);
         
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+        
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT ,0);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 400);
+        
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_HTTPHEADER, array(
             'Accept:application/json, text/javascript, */*; q=0.01',
@@ -59,7 +77,7 @@ class Service_Pattern
         $output = curl_exec($ch);
         curl_close($ch);
         $output = gzdecode($output);
-        return $output;
+        return array('type'=>1, 'result'=>$output);
     }
     
     
@@ -98,10 +116,13 @@ class Service_Pattern
         {
         	$err = curl_error($ch);
         	$errno = curl_errno($ch);
-        	$errno = $errno;
         }
         curl_close($ch);
         $output = gzdecode($res);
+        if($output === false)
+        {
+        	return false;
+        }
         $dom = new DOMDocument();
         libxml_use_internal_errors(true);
         $dom->loadHTML($output);
@@ -171,6 +192,10 @@ class Service_Pattern
         }
         foreach($result as $key=>$value)
         {
+        	if($value < 0)
+        	{
+        		Kohana::$log->add(Log::INFO, "negative value: $value");
+        	}
             $result[$key] = $result[$key] / $wordsCount;
         }
         return $result;
@@ -246,7 +271,6 @@ class Service_Pattern
         //$pattern->words[1]["word"];
         foreach($pattern->words as $words)
         {
-            
             if(!array_key_exists($words["word"], $resCA))
             {
                 $freq = 0;
@@ -256,20 +280,24 @@ class Service_Pattern
                 $freq = $resCA[$words["word"]];
             }
             //$dif[$i] = pow($freq - $pattern[$key], 2) * $pattern[$key] * $diff[$key];
-            $var = pow($freq - $words["frequency"], 2);
-            $var = pow($freq - $words["frequency"], 2) * $words["frequency"];
-            $var = pow($freq - $words["frequency"], 2) * $words["frequency"] * $words["dif_frequency"];
-            $var = pow($words["frequency"],3);
-            $var = pow($words["frequency"],3) * $words["dif_frequency"];
-            $dif += pow($freq - $words["frequency"], 2) * $words["frequency"] * $words["dif_frequency"];
+//             $var = pow($freq - $words["frequency"], 2);
+//             $var = pow($freq - $words["frequency"], 2) * $words["frequency"];
+             //$var1 = pow($freq - $words["frequency"], 2) * $words["frequency"] * $words["dif_frequency"];
+//             $var = pow($words["frequency"],3);
+             //$var2 = pow($words["frequency"],3) * $words["dif_frequency"];
+            if($freq < $words["frequency"])
+            {
+            	$dif += pow($freq - $words["frequency"], 2) * $words["frequency"] * $words["dif_frequency"];
+            }
             $maxDif += pow($words["frequency"],3) * $words["dif_frequency"];
             $i++;
         }
         
+        
         return 1 - $dif / $maxDif;
     }
 
-    function createPattern($patternName, $videoIds, $queue)
+    public function createPattern($patternName, $videoIds, $queue)
     {
 //         $pattern = ORM::factory('Pattern');
 //         $pattern->name = 'Новая категория';
@@ -334,7 +362,8 @@ class Service_Pattern
             $words->save();
         }
         
-        return array('patternId' => $pattern->id, 'patternName' => $patternName);
+        $patternEntity = new Entity_Pattern($pattern->id, true);
+        return $patternEntity;
     }
     
     public static function deletePatternByName($name)
@@ -345,8 +374,18 @@ class Service_Pattern
     public static function analizeVideo($videoId, $pattern)
     {
         $subtitle = Service_Pattern::getSubtitleByVideId($videoId);
-        $resCA = Service_Pattern::getStatistics(array(Service_Pattern::parseContentAnalize(Service_Pattern::getContentAnaliz($subtitle))));
-        return Service_Pattern::getSimilarityWithPattern($pattern, $resCA);
+        if($subtitle['type'] == 0)
+        {
+        	return "nosub";
+        }
+        else 
+        {
+        	$subtitle = $subtitle['result'];
+        	$resCA = Service_Pattern::getStatistics(array(Service_Pattern::parseContentAnalize(Service_Pattern::getContentAnaliz($subtitle))));
+        	return Service_Pattern::getSimilarityWithPattern($pattern, $resCA);
+        }
+        
+        
     }
     
     public static function getPatternById($id)
@@ -357,28 +396,48 @@ class Service_Pattern
         $word1 = $word1;
     }
     
-    public static function analizeChannel($request, $session)
+    /**
+     *
+     * @param Service_Queue $queue
+     */
+    public static function analizeChannel($request, $session, $channelId, $patternId, $queue)
     {
         $apiServicre = new Service_YTApi('1067254332521-4o8abvtsaj2sihjbj82qfa17j1vg8l6r.apps.googleusercontent.com',
             'oMbF7Zj1K9cCVXw3ZVGFN5z-');
         try
         {
-            $apiServicre->authorize($request, $session);
-            $htmlBody = $apiServicre->getChannelsVideo($session);
+            $apiServicre->authorize("analyze", $request, $session);
+            $htmlBody = $apiServicre->getChannelsVideo($session, $channelId);
             if($htmlBody['return_type'] == 1)
             {
-                echo $htmlBody['result'];
+                return $htmlBody;
             }
             else 
             {
-                echo Service_Pattern::analizeVideo($htmlBody['result'][0], new Pattern(13)) . " ";
-                echo Service_Pattern::analizeVideo($htmlBody['result'][1], new Pattern(13));
+            	foreach ($htmlBody['result'] as $videoId)
+            	{
+            		$sim = Service_Pattern::analizeVideo($videoId, new Pattern($patternId));
+            		if($sim != "nosub")
+            		{
+            			if($sim < 0.001)
+            			{
+            				$sim = 0;
+            			}
+            			$sim = substr($sim, 0, 5);
+            		}
+            		while(strlen($sim) < 5)
+            		{
+            			$sim = " " . $sim;
+            		}
+            		$toqueue = $videoId. substr($sim, 0, 5);
+            		$queue->pushResAnalyze($toqueue);
+            	}
+            	return array('return_type' => 0, 'result' => "true");
             }
         }
         catch(Exception $e)
         {
-            return $e->getMessage();
-            $e=$e;
+        	return array('return_type' => 2, 'result' => $e->getMessage());
         }
     }
     

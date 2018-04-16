@@ -160,10 +160,10 @@ Route::set('create_pattern', '(createPattern(/<id>))')
 			'action'     => 'createPattern',
 	));
 		
-Route::set('use_api', '(useApi(/<id>))')
+Route::set('analyzeChannel', '(analyzeChannel(/<id>))')
 	->defaults(array(
 	    'controller' => 'welcome',
-	    'action'     => 'useApi',
+	    'action'     => 'analyzeChannel',
 	));
 	
 Route::set('put_query', '(putToQueue(/<id>))')
@@ -201,4 +201,23 @@ Route::set('getSubResult', '(getSubResult(/<id>))')
 			'controller' => 'welcome',
 			'action'     => 'getSubResult',
 	));
+	
+Route::set('analyze', '(analyze(/<id>))')
+	->defaults(array(
+			'controller' => 'welcome',
+			'action'     => 'analyze',
+	));
+
+Route::set('authorize', '(authorize(/<id>))')
+	->defaults(array(
+			'controller' => 'welcome',
+			'action'     => 'authorize',
+	));
+	
+Route::set('getSubResultResAnalyze', '(getSubResultResAnalyze(/<id>))')
+	->defaults(array(
+			'controller' => 'welcome',
+			'action'     => 'getSubResultResAnalyze',
+	));
+	
 	

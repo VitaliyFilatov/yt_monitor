@@ -24,14 +24,15 @@ class Service_YTApi
      * @param Request $request
      * @param Session_Native $session
      */
-    public function authorize($request = NULL, $session = NULL)
+    public function authorize($path, $request = NULL, $session = NULL)
     {
         $this->client = new Google_Client();
         $this->client->setClientId($this->OAUTH2_CLIENT_ID);
         $this->client->setClientSecret($this->OAUTH2_CLIENT_SECRET);
         $this->client->setScopes('https://www.googleapis.com/auth/youtube');
-        $redirect = filter_var('http://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'],
-            FILTER_SANITIZE_URL);
+//          $redirect = filter_var('http://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'],
+//              FILTER_SANITIZE_URL);
+        $redirect = filter_var('http://' . $_SERVER['HTTP_HOST'] . "/authorize");
         $this->client->setRedirectUri($redirect);
         
         // Define an object that will be used to make all API requests.
@@ -39,6 +40,7 @@ class Service_YTApi
         
         // Check if an auth token exists for the required scopes
         $this->tokenSessionKey = 'token-' . $this->client->prepareScopes();
+        $result = 0;
         if ($request->query('code') !== NULL) {
             if (strval($session->get('state')) !== strval($request->query('state'))) {
                 die('The session state did not match.');
@@ -46,30 +48,34 @@ class Service_YTApi
             
             $this->client->authenticate($request->query('code'));
             $session->set($this->tokenSessionKey, $this->client->getAccessToken());
+            $redirect = filter_var('http://' . $_SERVER['HTTP_HOST'] . "/" . $path);
             header('Location: ' . $redirect);
+            $result = 1;
         }
         
         if ($session->get($this->tokenSessionKey) !== NULL) {
             $this->client->setAccessToken($session->get($this->tokenSessionKey));
         }
         
-//         if (!$this->client->getAccessToken())
-//         {
-//             $state = mt_rand();
-//             $this->client->setState($state);
-//             $session->set('state', $state);
-            
-//             $authUrl = $this->client->createAuthUrl();
-//             $htmlBody = '<h3>Authorization Required</h3><p>You need to <a href=' . $authUrl . '>authorize access</a> before proceeding.<p>';
-//             return $htmlBody;
-//         }
-//         else
-//         {
-//             $session->set($this->tokenSessionKey, $this->client->getAccessToken());
-//         }
+        
+        if ($this->client->getAccessToken())
+        {
+        	$session->set($this->tokenSessionKey, $this->client->getAccessToken());
+        	return $result;
+        }
+        else
+        {
+        	$state = mt_rand();
+        	$this->client->setState($state);
+        	$session->set('state', $state);
+        	
+        	$authUrl = $this->client->createAuthUrl();
+        	$htmlBody = '<a id="authLink" href=' . $authUrl . '></a>';
+        	return $htmlBody;
+        }
     }
     
-    public function getChannelsVideo($session)
+    public function getChannelsVideo($session, $channelId)
     {
         // Check to ensure that the access token was successfully acquired.
         if ($this->client->getAccessToken()) {
@@ -92,13 +98,13 @@ class Service_YTApi
                 do
                 {
                     $response = $this->youtube->search->listSearch('snippet', array('maxResults' => 50,
-                        'channelId' => 'UChFcVtxhHg7uED8osbCsYhw',
+                    	'channelId' => $channelId,
                         'pageToken' => $pageToken
                     ));
                     
                     foreach($response->items as $item)
                     {
-                        array_push($videoIds, $response->items[0]->id->videoId);
+                    	array_push($videoIds, $item->id->videoId);
                     }
                     
                     if(isset($response->nextPageToken))
@@ -119,9 +125,11 @@ class Service_YTApi
             } catch (Google_Service_Exception $e) {
                 $htmlBody = sprintf('<p>A service error occurred: <code>%s</code></p>',
                     htmlspecialchars($e->getMessage()));
+                $htmlBody = array('return_type' => 1, 'result' => $htmlBody);
             } catch (Google_Exception $e) {
                 $htmlBody = sprintf('<p>An client error occurred: <code>%s</code></p>',
                     htmlspecialchars($e->getMessage()));
+                $htmlBody = array('return_type' => 1, 'result' => $htmlBody);
             }
             
             $session->set($this->tokenSessionKey, $this->client->getAccessToken());
@@ -134,7 +142,8 @@ class Service_YTApi
             $session->set('state', $state);
             
             $authUrl = $this->client->createAuthUrl();
-            $htmlBody = '<h3>Authorization Required</h3><p>You need to <a href=' . $authUrl . '>authorize access</a> before proceeding.<p>';
+            //$htmlBody = '<h3>Authorization Required</h3><p>You need to <a href=' . $authUrl . '>authorize access</a> before proceeding.<p>';
+            $htmlBody = $authUrl;
             $htmlBody = array('return_type' => 1, 'result' => $htmlBody);
         }
         return $htmlBody;
