@@ -114,6 +114,20 @@ function onStartAnalyzeBtnClick()
     {
         resultList.children[0].remove();
     }
+    insertChannel.classList.add("display-none");
+    
+    var channelBtn = $("[name*='channelBtn']");
+    for(var i=0;i<channelBtn.length;i++)
+    {
+        channelBtn[i].classList.add("display-none");
+    }
+    
+    var channelId = $("[name*='channelId']");
+    for(var i=0;i<channelBtn.length;i++)
+    {
+        channelId[i].classList.remove("col-sm-5");
+        channelId[i].classList.add("col-sm-7");
+    }
     
     patternPanel.classList.add("display-none");
     channelPanel.classList.remove("col");
@@ -168,6 +182,7 @@ function onStartAnalyzeBtnClick()
             subAnalyze = false;
             infoWork.classList.add("display-none");
             infoDone.classList.remove("display-none");
+            lastVideoId="";
 //            if(data.return_type == 1)
 //            {
 //                authLink.parentElement.classList.remove("display-none");
@@ -245,9 +260,21 @@ function getSubResultAnalyze()
 
 function onStopAnalyzeBtnClick()
 {
+    var channelBtn = $("[name*='channelBtn']");
+    for(var i=0;i<channelBtn.length;i++)
+    {
+        channelBtn[i].classList.remove("display-none");
+    }
+    
+    var channelId = $("[name*='channelId']");
+    for(var i=0;i<channelBtn.length;i++)
+    {
+        channelId[i].classList.add("col-sm-5");
+        channelId[i].classList.remove("col-sm-7");
+    }
     patternPanel.classList.remove("display-none");
     channelPanel.classList.add("col");
-    channelPanel.classList.remove("col-sm-4");
+    channelPanel.classList.remove("col-sm-5");
     resultPanel.classList.add("display-none");
     stopAnalyzeBtn.classList.add("display-none");
     pauseAnalyzeBtn.classList.add("display-none");
@@ -273,9 +300,9 @@ function onInsertChannelBtnClick()
     var li = document.createElement("li");
     li.classList.add("list-group-item");
     li.id = "idchannel" + idChannelInput.value;
-    li.innerHTML = '<div class="row"><div class="col-sm-5">'+nameChannelInput.value+'</div>'+
-                   '<div class="col-sm-5">'+idChannelInput.value+'</div>'+
-                   '<div class="col-sm-2"><button id="removeChannelBtn'+idChannelInput.value+'" type="button" class="btn" style="background-color:transparent">'+
+    li.innerHTML = '<div name="channelName" class="row"><div class="col-sm-5">'+nameChannelInput.value+'</div>'+
+                   '<div name="channelId" class="col-sm-5">'+idChannelInput.value+'</div>'+
+                   '<div name="channelBtn" class="col-sm-2"><button id="removeChannelBtn'+idChannelInput.value+'" type="button" class="btn" style="background-color:transparent">'+
                    '<img src="media/png/glyphicons-208-remove.png" width="20" /></button></div></div>';
     
     var lastLi = channelList.children[channelList.children.length - 1];

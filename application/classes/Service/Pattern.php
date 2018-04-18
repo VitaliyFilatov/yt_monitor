@@ -398,6 +398,10 @@ class Service_Pattern
             {
             	foreach ($htmlBody['result'] as $videoId)
             	{
+            		if($videoId == null)
+            		{
+            			continue;
+            		}
             		$sim = Service_Pattern::analizeVideo($videoId, new Pattern($patternId));
             		if($sim != "nosub")
             		{

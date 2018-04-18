@@ -115,8 +115,6 @@ class Controller_Welcome extends Controller {
 		$servicePattern = new Service_Pattern();
 		
 		$body = $this->request->post();
-		$channelIds = $body['channelIds'];
-		$patternId = $body['patternId'];
 		$sessionid = $body['sessionid'];
 		
 		if(Model_Share::sharedExist($sessionid) === false)
@@ -127,6 +125,9 @@ class Controller_Welcome extends Controller {
 		
 		$queue = new Service_Queue(512, $sharedid, $sharedid);
 		$queue->initResAnalyze();
+		$channelIds = $body['channelIds'];
+		$patternId = $body['patternId'];
+		
 		
 		foreach($channelIds as $channelId)
 		{

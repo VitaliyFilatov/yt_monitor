@@ -125,7 +125,7 @@ class Service_YTApi
             } catch (Google_Service_Exception $e) {
                 $htmlBody = sprintf('<p>A service error occurred: <code>%s</code></p>',
                     htmlspecialchars($e->getMessage()));
-                $htmlBody = array('return_type' => 0, 'result' => $htmlBody);
+                $htmlBody = array('return_type' => 1, 'result' => $htmlBody);
             } catch (Google_Exception $e) {
                 $htmlBody = sprintf('<p>An client error occurred: <code>%s</code></p>',
                     htmlspecialchars($e->getMessage()));

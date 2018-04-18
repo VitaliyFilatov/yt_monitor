@@ -87,10 +87,10 @@
                                               <div class="col-sm-5">
                                                   Название канала
                                               </div>
-                                              <div class="col-sm-5">
+                                              <div name="channelId" class="col-sm-5">
                                                   id канала
                                               </div>
-                                              <div class="col-sm-2">
+                                              <div name="channelBtn" class="col-sm-2">
                                                   
                                               </div>
                                           </div>
