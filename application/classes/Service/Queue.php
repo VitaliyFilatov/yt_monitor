@@ -147,6 +147,39 @@ class Service_Queue
 		
 		sem_release($this->semId);
 	}
+	
+	public function initStop()
+	{
+		$this->semId = sem_get($this->SEMKEY, 1);
+		
+		$flag = sem_release($this->semId);
+		
+		if (!sem_acquire($this->semId))
+		{
+			$this->clear();
+			throw new Exception();
+		}
+		
+		// Create 100 byte shared memory block with system id of 0xff3
+		$this->shmId = shmop_open($this->SHMKEY, "c", 0644, $this->MEMSIZE);
+		if (!$this->shmId) {
+			$this->clear();
+			throw new Exception();
+		}
+		
+		
+		// Lets write a test string into shared memory
+		$shm_bytes_written = shmop_write($this->shmId, "?????", 0);
+		if ($shm_bytes_written != strlen("?????")) {
+			$this->clear();
+			throw new Exception();
+		}
+		
+		
+		shmop_close($this->shmId);
+		
+		sem_release($this->semId);
+	}
     
     public function clear()
     {
@@ -192,7 +225,7 @@ class Service_Queue
     }
     
     
-    public function pushResAnalyze($value)
+    public function push($value)
     {
     	//get id of semaphore
     	$this->semId = sem_get($this->SEMKEY, 1);
@@ -224,37 +257,6 @@ class Service_Queue
     	sem_release($this->semId);
     }
     
-//     public function pushToQueue($value)
-//     {
-//         //get id of semaphore
-//         $this->semId = sem_get($this->SEMKEY, 1);
-        
-//         //get id of shared memory
-//         $this->shmId = shm_attach($this->SHMKEY, $this->MEMSIZE);
-        
-//         if (!sem_acquire($this->semId))
-//         {
-//             $this->clear();
-//             throw new Exception();
-//         }
-        
-//         $counter = shm_get_var($this->shmId, 1);
-//         $counter++;
-        
-//         if (!shm_put_var($this->shmId, $counter, $value))
-//         {
-//             $this->clear();
-//             throw new Exception();
-//         }
-        
-//         if (!shm_put_var($this->shmId, 1, $counter))
-//         {
-//             $this->clear();
-//             throw new Exception();
-//         }
-        
-//         sem_release($this->semId);
-//     }
 
 	public function popResAnalyze()
 	{
@@ -279,6 +281,46 @@ class Service_Queue
 		
 		// Now lets read the string back
 		$result = shmop_read($this->shmId, 0, 16);//3 digit of number
+		if (!$result) {
+			$this->clear();
+			throw new Exception();
+		}
+		
+		//Now lets delete the block and close the shared memory segment
+		if (!shmop_delete($this->shmId)) {
+			$this->clear();
+			throw new Exception();
+		}
+		shmop_close($this->shmId);
+		
+		sem_release($this->semId);
+		
+		return $result;
+	}
+	
+	public function popStop()
+	{
+		//get id of semaphore
+		$this->semId = sem_get($this->SEMKEY, 1);
+		
+		
+		if (!sem_acquire($this->semId))
+		{
+			$this->clear();
+			throw new Exception();
+		}
+		
+		// Create 100 byte shared memory block with system id of 0xff3
+		$this->shmId = shmop_open($this->SHMKEY, "c", 0644, $this->MEMSIZE);
+		if (!$this->shmId) {
+			$this->clear();
+			throw new Exception();
+		}
+		// Get shared memory block's size
+		$shm_size = shmop_size($this->shmId);
+		
+		// Now lets read the string back
+		$result = shmop_read($this->shmId, 0, 5);//5 chars 'pause' or 'astop'
 		if (!$result) {
 			$this->clear();
 			throw new Exception();

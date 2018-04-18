@@ -115,8 +115,7 @@
                       <div class="card-footer">
                           <button id="addChanelBtn" type="button" class="btn btn-outline-primary btn-outline-darkblue btn-block">Добавить канал</button>
                           <button id="startAnalyzeBtn" type="button" class="btn btn-outline-primary btn-outline-darkblue btn-block">Анализ каналов</button>
-                          <button id="stopAnalyzeBtn" type="button" class="btn btn-outline-primary btn-outline-darkblue btn-block display-none">Остановить анализ</button>
-                          <button id="pauseAnalyzeBtn" type="button" class="btn btn-outline-primary btn-outline-darkblue btn-block display-none">Пауза</button>
+                          <button id="editParametersBtn" type="button" class="btn btn-outline-primary btn-outline-darkblue btn-block display-none">Вернуться к редактированию</button>
                       </div>
                   </div>
               </div>
@@ -151,7 +150,16 @@
                           </div>
                       </div>
                       <div class="card-footer">
-                          
+                          <div class="row">
+                              <div class="col">
+                                  <button id="stopAnalyzeBtn" type="button" class="btn btn-outline-primary btn-outline-darkblue btn-block">Остановить анализ</button>
+                              </div>
+                              <div class="col">
+                                  <button id="pauseAnalyzeBtn" type="button" class="btn btn-outline-primary btn-outline-darkblue btn-block">Пауза</button>
+                                  <button id="continueBtn" type="button" class="btn btn-outline-primary btn-outline-darkblue btn-block display-none">Продолжить</button>
+                                  <button id="startAgainBtn" type="button" class="btn btn-outline-primary btn-outline-darkblue btn-block display-none">Начать заново</button>
+                              </div>
+                          </div>
                       </div>
                   </div>
               </div>

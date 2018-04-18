@@ -226,5 +226,11 @@ Route::set('analyzeChannels', '(analyzeChannels(/<id>))')
 			'action'     => 'analyzeChannels',
 	));
 	
+Route::set('stopAnalyze', '(stopAnalyze(/<id>))')
+	->defaults(array(
+			'controller' => 'welcome',
+			'action'     => 'stopAnalyze',
+	));
+	
 	
 	

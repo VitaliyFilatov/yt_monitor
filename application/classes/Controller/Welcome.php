@@ -125,13 +125,33 @@ class Controller_Welcome extends Controller {
 		
 		$queue = new Service_Queue(512, $sharedid, $sharedid);
 		$queue->initResAnalyze();
+		
+		$stopanalyze = $sessionid . "stop";
+		if(Model_Share::sharedExist($stopanalyze) === false)
+		{
+			Model_Share::createShared($stopanalyze);
+		}
+		$sharedid = Model_Share::getShareId($stopanalyze);
+		
+		$stopqueue = new Service_Queue(512, $sharedid, $sharedid);
+		$stopqueue->initStop();
+		
+		$pauseanalyze = $sessionid . "pause";
+		if(Model_Share::sharedExist($pauseanalyze) === false)
+		{
+			Model_Share::createShared($pauseanalyze);
+		}
+		$sharedid = Model_Share::getShareId($pauseanalyze);
+		
+		$pausequeue = new Service_Queue(512, $sharedid, $sharedid);
+		$pausequeue->initStop();
 		$channelIds = $body['channelIds'];
 		$patternId = $body['patternId'];
 		
 		
 		foreach($channelIds as $channelId)
 		{
-			$result = Service_Pattern::analizeChannel($request, $session, $channelId, $patternId, $queue);
+			$result = Service_Pattern::analizeChannel($request, $session, $channelId, $patternId, $queue, $stopqueue, $pausequeue);
 			if($result['return_type'] !== 0)
 			{
 				echo json_encode($result);
@@ -139,6 +159,22 @@ class Controller_Welcome extends Controller {
 			}
 		}
 		echo json_encode(array('return_type' => 0, 'result' => "true"));
+	}
+	
+	public function action_stopAnalyze()
+	{
+		$body = $this->request->post();
+		$sessionid = $body['sessionid'];
+		
+		$stopanalyze = $sessionid . "stop";
+		if(Model_Share::sharedExist($stopanalyze) === false)
+		{
+			Model_Share::createShared($stopanalyze);
+		}
+		$sharedid = Model_Share::getShareId($stopanalyze);
+		
+		$queue = new Service_Queue(512, $sharedid, $sharedid);
+		$queue->push("astop");
 	}
 	
 	public function action_analyzeChannel()

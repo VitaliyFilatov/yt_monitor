@@ -381,8 +381,10 @@ class Service_Pattern
     /**
      *
      * @param Service_Queue $queue
+     * @param Service_Queue $stopqueue
+     * @param Service_Queue $pausequeue
      */
-    public static function analizeChannel($request, $session, $channelId, $patternId, $queue)
+    public static function analizeChannel($request, $session, $channelId, $patternId, $queue, $stopqueue, $pausequeue)
     {
         $apiServicre = new Service_YTApi('1067254332521-4o8abvtsaj2sihjbj82qfa17j1vg8l6r.apps.googleusercontent.com',
             'oMbF7Zj1K9cCVXw3ZVGFN5z-');
@@ -398,6 +400,11 @@ class Service_Pattern
             {
             	foreach ($htmlBody['result'] as $videoId)
             	{
+            		$stop = $stopqueue->popStop();
+            		if($stop == "astop")
+            		{
+            			return array('return_type' => 0, 'result' => "true");
+            		}
             		if($videoId == null)
             		{
             			continue;
@@ -416,7 +423,7 @@ class Service_Pattern
             			$sim = " " . $sim;
             		}
             		$toqueue = $videoId. substr($sim, 0, 5);
-            		$queue->pushResAnalyze($toqueue);
+            		$queue->push($toqueue);
             	}
             	return array('return_type' => 0, 'result' => "true");
             }
