@@ -10,7 +10,7 @@ var saveProgress = $("#saveProgress")[0];
 var saveProgressWidthClass="";
 var patterns;
 var oldValue = 0;
-var editedPattern;
+var editedPattern = -1;
 
 var subResult=false;
 
@@ -26,11 +26,23 @@ function searchPatternById(id)
     return false;
 }
 
-function onAddPatternBtnClick()
+function showEditPanel()
 {
     mainPanel.classList.remove("w-50");
     mainPanel.classList.remove("mx-auto");
     editPanel.classList.remove("display-none");
+    for(var i=0;i< 20; i++)
+    {
+       saveProgress.classList.remove("w-" + (i*5 +  5)); 
+    }
+}
+
+function onAddPatternBtnClick()
+{
+    showEditPanel();
+    patternNameInput.value = "";
+    videoIdsInput.value = "";
+    editedPattern = -1;
 }
 
 function onCancelBtnClick()
@@ -43,30 +55,39 @@ function onCancelBtnClick()
 
 function onSaveBtnClick()
 {
+    var sessionid = document.cookie.substr(8);
+    if(sessionid.indexOf(";") >= 0)
+    {
+        sessionid = sessionid.substr(0, sessionid.indexOf(";")); 
+    }
     saveProgress.parentElement.classList.remove("display-none");
     subResult = true;
     $.ajax({
         url: "createPattern?XDEBUG_SESSION_START=ECLIPSE_DBGP",
         type: "POST",
         data: {patternName : patternNameInput.value,
-               videoIds : videoIdsInput.value},
+               videoIds : videoIdsInput.value,
+               sessionid : sessionid},
         error: function(jqXHR, textStatus, errorThrown )
         {
             console.log("error: " + errorThrown);
             subResult = false;
             oldValue = 0;
             saveProgress.parentElement.classList.add("display-none");
+            editedPattern = -1;
         },
         success: function(data, textStatus, jqXHR )
         {
             subResult = false;
             oldValue = 0;
             saveProgress.parentElement.classList.add("display-none");
-            if(data == false)
+            data = JSON.parse(data);
+            if(data.type === 0)
             {
+                alert("Субтитры для видео с id=" + data.result + "отсутствуют");
                 return;
             }
-            data = JSON.parse(data);
+            data = data.result;
             //console.log("success: " + data.patternName);
             var li = document.createElement("li");
             li.classList.add("list-group-item");
@@ -75,9 +96,15 @@ function onSaveBtnClick()
                     '</div><div class="col-sm-3"><button id="editPatternBtn' + data.id +
                 '" type="button" class="btn" style="background-color:transparent"><img src="media/png/glyphicons-236-pen.png" width="20"/></button><button id="removePatternBtn' + data.id +
                 '" type="button" class="btn" style="background-color:transparent"><img src="media/png/glyphicons-208-remove.png" width="20"/></button></div></div>';
-            var el = $("#id" + editedPattern.id)[0];
-            el.remove();
+            if(editedPattern != -1)
+            {
+                var el = $("#id" + editedPattern.id)[0];
+                el.remove();
+            }
+            editedPattern = -1;
             patternList.appendChild(li);
+            $("#editPatternBtn" + data.id)[0].addEventListener("click",onEditPatternBtnClick);
+            $("#removePatternBtn" + data.id)[0].addEventListener("click",onDeletePatternBtnClick);
             patterns.push(data);
         }
     });
@@ -87,10 +114,16 @@ function onSaveBtnClick()
 
 function getSubResultSavePattern()
 {
+    var sessionid = document.cookie.substr(8);
+    if(sessionid.indexOf(";") >= 0)
+    {
+        sessionid = sessionid.substr(0, sessionid.indexOf(";")); 
+    }
     $.ajax({
         url: "getSubResult?XDEBUG_SESSION_START=ECLIPSE_DBGP",
         type: "POST",
-        data: {oldValue : oldValue},
+        data: {oldValue : oldValue,
+               sessionid : sessionid},
         error: function(jqXHR, textStatus, errorThrown )
         {
             console.log("error: " + errorThrown);
@@ -140,7 +173,35 @@ function onEditPatternBtnClick()
             videoIdsInput.value += ",";
         }
     }
-    onAddPatternBtnClick();
+    showEditPanel();
+}
+
+function onDeletePatternBtnClick()
+{
+    var id = this.id;
+    id = id.substr(16);
+    $.ajax({
+        url: "deletePattern?XDEBUG_SESSION_START=ECLIPSE_DBGP",
+        type: "POST",
+        data: {patternId : id},
+        error: function(jqXHR, textStatus, errorThrown )
+        {
+            console.log("error: " + errorThrown);
+        },
+        success: function(data, textStatus, jqXHR )
+        {
+            console.log("data: "+data);
+            if(data == true)
+            {
+                var li = $("#id" + id)[0];
+                li.remove();
+            }
+            else
+            {
+                alert("Невозможно удалить запись");
+            }
+        }
+    });
 }
 
 function onStartPage()
@@ -168,6 +229,7 @@ function onStartPage()
                 '" type="button" class="btn" style="background-color:transparent"><img src="media/png/glyphicons-208-remove.png" width="20"/></button></div></div>';
                 patternList.appendChild(li);
                 $("#editPatternBtn" + data[i].id)[0].addEventListener("click",onEditPatternBtnClick);
+                $("#removePatternBtn" + data[i].id)[0].addEventListener("click",onDeletePatternBtnClick);
             }
         }
     });

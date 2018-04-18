@@ -220,4 +220,11 @@ Route::set('getSubResultResAnalyze', '(getSubResultResAnalyze(/<id>))')
 			'action'     => 'getSubResultResAnalyze',
 	));
 	
+Route::set('analyzeChannels', '(analyzeChannels(/<id>))')
+	->defaults(array(
+			'controller' => 'welcome',
+			'action'     => 'analyzeChannels',
+	));
+	
+	
 	

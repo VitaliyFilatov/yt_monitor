@@ -192,10 +192,6 @@ class Service_Pattern
         }
         foreach($result as $key=>$value)
         {
-        	if($value < 0)
-        	{
-        		Kohana::$log->add(Log::INFO, "negative value: $value");
-        	}
             $result[$key] = $result[$key] / $wordsCount;
         }
         return $result;
@@ -299,40 +295,21 @@ class Service_Pattern
 
     public function createPattern($patternName, $videoIds, $queue)
     {
-//         $pattern = ORM::factory('Pattern');
-//         $pattern->name = 'Новая категория';
-//         $pattern->save();
-//         $video = ORM::factory('PatternVideo');
-//         $video->video_id = '1234567890';
-//         $video->pattern_id = $pattern->id;
-//         $video->save();
         $genWords = $this->getGeneralWords("C:\\Server\\data\\htdocs\\yt_monitor\\files\\lemma.num");
         $videoIdsWithSubtls = array();
-//         $pattern = ORM::factory('Pattern');
-//         $pattern->name = $patternName;
-//         $pattern->save();
         $wordsstat = array();
         $i=0;
         foreach($videoIds as $videoId)
         {
         	$i++;
             $subtitle = $this->getSubtitleByVideId($videoId);
+            if($subtitle['type'] === 0)
+            {
+            	return array('type'=>0, 'result'=>$videoId);
+            }
+            $subtitle = $subtitle['result'];
             array_push($wordsstat, $this->parseContentAnalize($this->getContentAnaliz($subtitle)));
             array_push($videoIdsWithSubtls, $videoId);
-            //$diff = $this->getDifferentInWordParts($genWords, $wordsstat);
-//             $video = ORM::factory('PatternVideo');
-//             $video->video_id = $videoId;
-//             $video->pattern_id = $pattern->id;
-//             $video->save();
-//             foreach($wordsstat as $key=>$value)
-//             {
-//                 $words = ORM::factory('PatternWords');
-//                 $words->word = $key;
-//                 $words->frequency = $value;
-//                 $words->dif_frequency = $diff[$key];
-//                 $words->pattern_id = $pattern->id;
-//                 $words->save();
-//             }
 			$queue->pushToQueue(round($i/count($videoIds)*100));
             
         }
@@ -363,12 +340,17 @@ class Service_Pattern
         }
         
         $patternEntity = new Entity_Pattern($pattern->id, true);
-        return $patternEntity;
+        return array('type'=>1, 'result'=>$patternEntity);
     }
     
     public static function deletePatternByName($name)
     {
         Model_Pattern::deleteByName($name);
+    }
+    
+    public static function deletePatternById($id)
+    {
+    	return Model_Pattern::deletePatternById($id);
     }
     
     public static function analizeVideo($videoId, $pattern)

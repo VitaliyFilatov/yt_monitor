@@ -75,14 +75,14 @@
           <div id="authContainer" style="display:none"></div>
           <div class="row">
               <div id="channelPanel" class="col">
-                  <h2>Список каналов</h2>
+                  <h2>Список каналов для анализа</h2>
                   
                   <div class="card" style="color:#294a70;">
                       <div class="card-body">
                           <div class="pre-scrollable">
                               <div class="container">
                                   <ul id="channelList" class="list-group" style="color:#294a70;">
-                                      <li class="list-group-item">
+                                      <li id="unusedChannel" class="list-group-item">
                                           <div class="row">
                                               <div class="col-sm-5">
                                                   Название канала
@@ -91,9 +91,7 @@
                                                   id канала
                                               </div>
                                               <div class="col-sm-2">
-                                                  <button type="button" class="btn" style="background-color:transparent">
-                                                      <img src="media/png/glyphicons-208-remove.png" width="20" />
-                                                  </button>
+                                                  
                                               </div>
                                           </div>
                                       </li>
@@ -137,7 +135,7 @@
                   </div>
               </div>
               
-              <div id="resultPanel" class="col-sm-8 display-none">
+              <div id="resultPanel" class="col-sm-7 display-none">
                   <h2>Результаты анализа</h2>
                   <div class="card" style="color:#294a70;">
                       <div class="card-header">
@@ -145,12 +143,9 @@
                           <h3 id="infoDone" class="display-none">анализ завершён</h3>
                       </div>
                       <div class="card-body">
-                          <div class="pre-scrollable">
+                          <div id="scrollResult" class="pre-scrollable">
                               <div class="container">
                                   <ul id="resultList" class="list-group" style="color:#294a70;">
-                                      <li class="list-group-item display-none">
-                                          <a id="authLink" href="#">authorize access</a>
-                                      </li>
                                   </ul>
                               </div>
                           </div>

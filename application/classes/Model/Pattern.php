@@ -42,4 +42,22 @@ class Model_Pattern extends Model_Base
 	    
 	    return true;
 	}
+	
+	public static function deletePatternById($id)
+	{
+		try 
+		{
+			$video = new Model_PatternVideo();
+			$words = new Model_PatternWords();
+			$video->deleteByPatternId($id);
+			$words->deleteByPatternId($id);
+			static::deleteById($id);
+			return true;
+		}
+		catch(Exception $e)
+		{
+			Kohana::$log->add(Log::ERROR, "error in db: " . $e->getMessage());
+			return "database error";
+		}
+	}
 }

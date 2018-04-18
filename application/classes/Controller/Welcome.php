@@ -25,17 +25,22 @@ class Controller_Welcome extends Controller {
 		$videoIds = $body['videoIds'];
 		$videoIds = explode(",",$videoIds);
 	    $servicePattern = new Service_Pattern();
-	    
+	    $sessionid = $body['sessionid'] . 'c';
+	    if(Model_Share::sharedExist($sessionid) === false)
+	    {
+	    	Model_Share::createShared($sessionid);
+	    }
+	    $sharedid = Model_Share::getShareId($sessionid);
 	    try
 	    {
-	    	$queue = new Service_Queue(512, 1, 1);
+	    	$queue = new Service_Queue(512, $sharedid, $sharedid);
 	    	$queue->init();
 	    	$pattern = $servicePattern->createPattern($patternName, $videoIds, $queue);
 	    	echo json_encode($pattern);
 	    }
 	    catch(Exception $e)
 	    {
-	    	echo false;
+	    	echo json_encode(array('type'=>0, 'result'=>false));
 	    }
 	}
 	
@@ -43,7 +48,13 @@ class Controller_Welcome extends Controller {
 	{
 		$body = $this->request->post();
 		$oldValue = $body['oldValue'];
-		$queue = new Service_Queue(512, 1, 1);
+		$sessionid = $body['sessionid'] . 'c';
+		if(Model_Share::sharedExist($sessionid) === false)
+		{
+			Model_Share::createShared($sessionid);
+		}
+		$sharedid = Model_Share::getShareId($sessionid);
+		$queue = new Service_Queue(512, $sharedid, $sharedid);
 		$subResult;
 		while(true)
 		{
@@ -69,8 +80,14 @@ class Controller_Welcome extends Controller {
 	{
 		$body = $this->request->post();
 		$lastVideoId= $body['lastVideoId'];
-		$queue = new Service_Queue(512, 2, 2);
 		$subResult;
+		$sessionid = $body['sessionid'];
+		if(Model_Share::sharedExist($sessionid) === false)
+		{
+			Model_Share::createShared($sessionid);
+		}
+		$sharedid = Model_Share::getShareId($sessionid);
+		$queue = new Service_Queue(512, $sharedid, $sharedid);
 		while(true)
 		{
 			$subResult = $queue->popResAnalyze();
@@ -89,6 +106,38 @@ class Controller_Welcome extends Controller {
 			break;
 		}
 		echo $subResult;
+	}
+	
+	public function action_analyzeChannels()
+	{
+		$request = $this->request;
+		$session = Session::instance();
+		$servicePattern = new Service_Pattern();
+		
+		$body = $this->request->post();
+		$channelIds = $body['channelIds'];
+		$patternId = $body['patternId'];
+		$sessionid = $body['sessionid'];
+		
+		if(Model_Share::sharedExist($sessionid) === false)
+		{
+			Model_Share::createShared($sessionid);
+		}
+		$sharedid = Model_Share::getShareId($sessionid);
+		
+		$queue = new Service_Queue(512, $sharedid, $sharedid);
+		$queue->initResAnalyze();
+		
+		foreach($channelIds as $channelId)
+		{
+			$result = Service_Pattern::analizeChannel($request, $session, $channelId, $patternId, $queue);
+			if($result['return_type'] !== 0)
+			{
+				echo json_encode($result);
+				return;
+			}
+		}
+		echo json_encode(array('return_type' => 0, 'result' => "true"));
 	}
 	
 	public function action_analyzeChannel()
@@ -110,7 +159,10 @@ class Controller_Welcome extends Controller {
 	
 	public function action_deletePattern()
 	{
-	    Service_Pattern::deletePatternByName('Направление');
+	    //Service_Pattern::deletePatternByName('Направление');
+		$body = $this->request->post();
+		$patternId = $body['patternId'];
+		echo Service_Pattern::deletePatternById($patternId);
 	}
 	
 	public function action_getPatternById()

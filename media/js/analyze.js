@@ -15,6 +15,8 @@ var resultList = $("#resultList")[0];
 var authContainer = $("#authContainer")[0];
 var infoWork = $("#infoWork")[0];
 var infoDone = $("#infoDone")[0];
+var channelList = $("#channelList")[0];
+var scrollResult = $("#scrollResult")[0];
 
 
 var idPatternActive="";
@@ -108,9 +110,14 @@ function onStartPage()
 
 function onStartAnalyzeBtnClick()
 {
+    while(resultList.children.length)
+    {
+        resultList.children[0].remove();
+    }
+    
     patternPanel.classList.add("display-none");
     channelPanel.classList.remove("col");
-    channelPanel.classList.add("col-sm-4");
+    channelPanel.classList.add("col-sm-5");
     resultPanel.classList.remove("display-none");
     stopAnalyzeBtn.classList.remove("display-none");
     pauseAnalyzeBtn.classList.remove("display-none");
@@ -121,12 +128,28 @@ function onStartAnalyzeBtnClick()
     infoWork.classList.remove("display-none");
     infoDone.classList.add("display-none");
     subAnalyze=true;
+    var rows = channelList.children;
+    var channelIds=[];
+    for(var i=0; i < rows.length - 1; i++)
+    {
+        if(rows[i].id != "unusedChannel")
+        {
+            channelIds.push(rows[i].id.substr(9));
+        }
+    }
+    
+    var sessionid = document.cookie.substr(8);
+    if(sessionid.indexOf(";") >= 0)
+    {
+        sessionid = sessionid.substr(0, sessionid.indexOf(";")); 
+    }
     
     $.ajax({
-        url: "analyzeChannel?XDEBUG_SESSION_START=ECLIPSE_DBGP",
+        url: "analyzeChannels?XDEBUG_SESSION_START=ECLIPSE_DBGP",
         type: "POST",
-        data: {channelId : 'UCqPKeDJ7fV0Nj0KrL1lGqaQ',
-               patternId : '18'},
+        data: {channelIds : channelIds,
+               patternId : idPatternActive.substr(2),
+               sessionid : sessionid},
         error: function(jqXHR, textStatus, errorThrown )
         {
             console.log("error: " + errorThrown);
@@ -137,6 +160,11 @@ function onStartAnalyzeBtnClick()
         success: function(data, textStatus, jqXHR )
         {
             data = JSON.parse(data);
+            if(data.return_type == 1)
+            {
+                authContainer.innerHTML = data.result;
+                $("#authLink")[0].click();
+            }
             subAnalyze = false;
             infoWork.classList.add("display-none");
             infoDone.classList.remove("display-none");
@@ -155,10 +183,17 @@ function onStartAnalyzeBtnClick()
 
 function getSubResultAnalyze()
 {
+    var sessionid = document.cookie.substr(8);
+    if(sessionid.indexOf(";") >= 0)
+    {
+        sessionid = sessionid.substr(0, sessionid.indexOf(";")); 
+    }
+    
     $.ajax({
         url: "getSubResultResAnalyze?XDEBUG_SESSION_START=ECLIPSE_DBGP",
         type: "POST",
-        data: {lastVideoId : lastVideoId},
+        data: {lastVideoId : lastVideoId,
+               sessionid : sessionid},
         error: function(jqXHR, textStatus, errorThrown )
         {
             console.log("error: " + errorThrown);
@@ -181,8 +216,9 @@ function getSubResultAnalyze()
                 var li = document.createElement("li");
                 li.classList.add("list-group-item");
                 li.innerHTML = '<div class="row"><div class="col-sm-7">' + videoId + 
-                    '</div><div class="col-sm-5">' + data.substr(11, 5) + '</div>';
+                    '</div><div class="col-sm-5">' + data.substr(11, 5) + '</div>'; 
                 resultList.appendChild(li);
+                scrollResult.scrollTop = scrollResult.scrollHeight
             }
             
 
@@ -230,6 +266,28 @@ function onAddChanelBtnClick()
 function onInsertChannelBtnClick()
 {
     insertChannel.classList.add("display-none");
+    if(nameChannelInput.value == "" || idChannelInput.value == "")
+    {
+        return;
+    }
+    var li = document.createElement("li");
+    li.classList.add("list-group-item");
+    li.id = "idchannel" + idChannelInput.value;
+    li.innerHTML = '<div class="row"><div class="col-sm-5">'+nameChannelInput.value+'</div>'+
+                   '<div class="col-sm-5">'+idChannelInput.value+'</div>'+
+                   '<div class="col-sm-2"><button id="removeChannelBtn'+idChannelInput.value+'" type="button" class="btn" style="background-color:transparent">'+
+                   '<img src="media/png/glyphicons-208-remove.png" width="20" /></button></div></div>';
+    
+    var lastLi = channelList.children[channelList.children.length - 1];
+    channelList.insertBefore(li, lastLi);
+    $("#removeChannelBtn" + idChannelInput.value)[0].addEventListener("click",onRemoveChannelBtnClick);
+}
+
+function onRemoveChannelBtnClick()
+{
+    var id = this.id;
+    id = id.substr(16);
+    $("#idchannel" + id)[0].remove();
 }
 
 function onPatternClick()
