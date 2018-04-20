@@ -58,7 +58,7 @@ class Controller_Welcome extends Controller {
 		$subResult;
 		while(true)
 		{
-			$subResult = $queue->popFromQueue();
+			$subResult = $queue->pop(3);
 			if($oldValue == 0)
 			{
 				if($subResult != "101")
@@ -90,7 +90,7 @@ class Controller_Welcome extends Controller {
 		$queue = new Service_Queue(512, $sharedid, $sharedid);
 		while(true)
 		{
-			$subResult = $queue->popResAnalyze();
+			$subResult = $queue->pop(16);
 			if($lastVideoId == "")
 			{
 				if($subResult != "????????????????")
@@ -145,13 +145,98 @@ class Controller_Welcome extends Controller {
 		
 		$pausequeue = new Service_Queue(512, $sharedid, $sharedid);
 		$pausequeue->initStop();
+		
+		$channelsnalyze = $sessionid . "channels";
+		if(Model_Share::sharedExist($channelsnalyze) === false)
+		{
+			Model_Share::createShared($channelsnalyze);
+		}
+		$sharedid = Model_Share::getShareId($channelsnalyze);
+		
 		$channelIds = $body['channelIds'];
+		$channelsStr = implode(",", $channelIds);
+		
+		$channelsqueue = new Service_Queue(strlen($channelsStr)+15, $sharedid, $sharedid);
+		$channelsqueue->initPause();
 		$patternId = $body['patternId'];
 		
 		
 		foreach($channelIds as $channelId)
 		{
-			$result = Service_Pattern::analizeChannel($request, $session, $channelId, $patternId, $queue, $stopqueue, $pausequeue);
+			$result = Service_Pattern::analizeChannel($request, $session, $channelId, $patternId, $queue, $stopqueue, $pausequeue, $channelsqueue);
+			if($result['return_type'] !== 0)
+			{
+				echo json_encode($result);
+				return;
+			}
+		}
+		echo json_encode(array('return_type' => 0, 'result' => "true"));
+	}
+	
+	public function action_continueAnalyze()
+	{
+		$request = $this->request;
+		$session = Session::instance();
+		$servicePattern = new Service_Pattern();
+		
+		$body = $this->request->post();
+		$sessionid = $body['sessionid'];
+		
+		if(Model_Share::sharedExist($sessionid) === false)
+		{
+			Model_Share::createShared($sessionid);
+		}
+		$sharedid = Model_Share::getShareId($sessionid);
+		
+		$queue = new Service_Queue(512, $sharedid, $sharedid);
+		$queue->initResAnalyze();
+		
+		$stopanalyze = $sessionid . "stop";
+		if(Model_Share::sharedExist($stopanalyze) === false)
+		{
+			Model_Share::createShared($stopanalyze);
+		}
+		$sharedid = Model_Share::getShareId($stopanalyze);
+		
+		$stopqueue = new Service_Queue(512, $sharedid, $sharedid);
+		$stopqueue->initStop();
+		
+		$pauseanalyze = $sessionid . "pause";
+		if(Model_Share::sharedExist($pauseanalyze) === false)
+		{
+			Model_Share::createShared($pauseanalyze);
+		}
+		$sharedid = Model_Share::getShareId($pauseanalyze);
+		
+		$pausequeue = new Service_Queue(512, $sharedid, $sharedid);
+		$pausequeue->initStop();
+		
+		$channelsnalyze = $sessionid . "channels";
+		if(Model_Share::sharedExist($channelsnalyze) === false)
+		{
+			Model_Share::createShared($channelsnalyze);
+		}
+		$sharedid = Model_Share::getShareId($channelsnalyze);
+		
+		$channelsqueue = new Service_Queue(5, $sharedid, $sharedid);
+		
+		$length = $channelsqueue->pop(5);
+		
+		$length = $length + 0;
+		
+		$channelsqueue = new Service_Queue($length + 15, $sharedid, $sharedid);
+		
+		$str = $channelsqueue->pop($length + 15);
+		
+		$patternId = substr($str, 5, 10);
+		$patternId = $patternId + 0;
+		
+		$channelIds = substr($str, 15);
+		$channelIds = explode(",", $channelIds);
+		
+		foreach($channelIds as $channelId)
+		{
+			$result = Service_Pattern::analizeChannel($request, $session, $channelId, $patternId, $queue, $stopqueue, $pausequeue, $channelsqueue);
 			if($result['return_type'] !== 0)
 			{
 				echo json_encode($result);
@@ -175,6 +260,22 @@ class Controller_Welcome extends Controller {
 		
 		$queue = new Service_Queue(512, $sharedid, $sharedid);
 		$queue->push("astop");
+	}
+	
+	public function action_pauseAnalyze()
+	{
+		$body = $this->request->post();
+		$sessionid = $body['sessionid'];
+		
+		$pauseanalyze = $sessionid . "pause";
+		if(Model_Share::sharedExist($pauseanalyze) === false)
+		{
+			Model_Share::createShared($pauseanalyze);
+		}
+		$sharedid = Model_Share::getShareId($pauseanalyze);
+		
+		$queue = new Service_Queue(512, $sharedid, $sharedid);
+		$queue->push("pause");
 	}
 	
 	public function action_analyzeChannel()

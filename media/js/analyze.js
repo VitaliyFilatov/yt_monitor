@@ -229,28 +229,8 @@ function getSubResultAnalyze()
 
 function onStopAnalyzeBtnClick()
 {
-//    var channelBtn = $("[name*='channelBtn']");
-//    for(var i=0;i<channelBtn.length;i++)
-//    {
-//        channelBtn[i].classList.remove("display-none");
-//    }
-//    
-//    var channelId = $("[name*='channelId']");
-//    for(var i=0;i<channelBtn.length;i++)
-//    {
-//        channelId[i].classList.add("col-sm-5");
-//        channelId[i].classList.remove("col-sm-7");
-//    }
-//    patternPanel.classList.remove("display-none");
-//    channelPanel.classList.add("col");
-//    channelPanel.classList.remove("col-sm-5");
-//    resultPanel.classList.add("display-none");
-//    stopAnalyzeBtn.classList.add("display-none");
-//    pauseAnalyzeBtn.classList.add("display-none");
-//    
-//    startAnalyzeBtn.classList.remove("display-none");
-//    addChanelBtn.classList.remove("display-none");
-    
+    pauseAnalyzeBtn.classList.add("display-none");
+    startAgainBtn.classList.remove("display-none");
     var sessionid = getSessionId()
     $.ajax({
         url: "stopAnalyze?XDEBUG_SESSION_START=ECLIPSE_DBGP",
@@ -264,6 +244,52 @@ function onStopAnalyzeBtnClick()
         {
         }
     });
+}
+
+function onPauseAnalyzeBtnClick()
+{
+    continueBtn.classList.remove("display-none");
+    pauseAnalyzeBtn.classList.add("display-none");
+    var sessionid = getSessionId()
+    $.ajax({
+        url: "pauseAnalyze?XDEBUG_SESSION_START=ECLIPSE_DBGP",
+        type: "POST",
+        data: {sessionid : sessionid},
+        error: function(jqXHR, textStatus, errorThrown )
+        {
+            console.log("error: " + errorThrown);
+        },
+        success: function(data, textStatus, jqXHR )
+        {
+        }
+    });
+}
+
+function onContinueBtnClick()
+{
+    continueBtn.classList.add("display-none");
+    pauseAnalyzeBtn.classList.remove("display-none");
+    var sessionid = getSessionId()
+    $.ajax({
+        url: "continueAnalyze?XDEBUG_SESSION_START=ECLIPSE_DBGP",
+        type: "POST",
+        data: {sessionid : sessionid},
+        error: function(jqXHR, textStatus, errorThrown )
+        {
+            console.log("error: " + errorThrown);
+        },
+        success: function(data, textStatus, jqXHR )
+        {
+        }
+    });
+}
+
+function onStartAgainBtnClick()
+{
+    pauseAnalyzeBtn.classList.remove("display-none");
+    startAgainBtn.classList.add("display-none");
+    
+    onStartAnalyzeBtnClick();
 }
 
 function onAddChanelBtnClick()
@@ -350,3 +376,6 @@ addChanelBtn.addEventListener("click", onAddChanelBtnClick);
 insertChannelBtn.addEventListener("click", onInsertChannelBtnClick);
 stopAnalyzeBtn.addEventListener("click", onStopAnalyzeBtnClick);
 editParametersBtn.addEventListener("click", onEditParametersBtnClick);
+pauseAnalyzeBtn.addEventListener("click", onPauseAnalyzeBtnClick);
+continueBtn.addEventListener("click", onContinueBtnClick);
+startAgainBtn.addEventListener("click", onStartAgainBtnClick);

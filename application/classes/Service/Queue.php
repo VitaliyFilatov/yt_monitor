@@ -181,6 +181,39 @@ class Service_Queue
 		sem_release($this->semId);
 	}
     
+	public function initPause()
+	{
+		$this->semId = sem_get($this->SEMKEY, 1);
+		
+		$flag = sem_release($this->semId);
+		
+		if (!sem_acquire($this->semId))
+		{
+			$this->clear();
+			throw new Exception();
+		}
+		
+		// Create 100 byte shared memory block with system id of 0xff3
+		$this->shmId = shmop_open($this->SHMKEY, "c", 0644, $this->MEMSIZE);
+		if (!$this->shmId) {
+			$this->clear();
+			throw new Exception();
+		}
+		
+		
+		// Lets write a test string into shared memory
+		$shm_bytes_written = shmop_write($this->shmId, "00000", 0);
+		if ($shm_bytes_written != strlen("00000")) {
+			$this->clear();
+			throw new Exception();
+		}
+		
+		
+		shmop_close($this->shmId);
+		
+		sem_release($this->semId);
+	}
+	
     public function clear()
     {
     	shmop_delete($this->shmId);
@@ -378,13 +411,11 @@ class Service_Queue
         return $result;
     }
     
-    public function begin()
+    public function pop($bytes)
     {
     	//get id of semaphore
     	$this->semId = sem_get($this->SEMKEY, 1);
     	
-    	//get id of shared memory
-    	$this->shmId = shm_attach($this->SHMKEY, $this->MEMSIZE);
     	
     	if (!sem_acquire($this->semId))
     	{
@@ -392,31 +423,72 @@ class Service_Queue
     		throw new Exception();
     	}
     	
-    	$counter = shm_get_var($this->shmId, 1);
-    	if($counter < 2)
-    	{
-    		sem_release($this->semId);
-    		return false;
+    	// Create 100 byte shared memory block with system id of 0xff3
+    	$this->shmId = shmop_open($this->SHMKEY, "c", 0644, $this->MEMSIZE);
+    	if (!$this->shmId) {
+    		$this->clear();
+    		throw new Exception();
     	}
-    	$counter = 2;
+    	// Get shared memory block's size
+    	$shm_size = shmop_size($this->shmId);
     	
-    	$result = shm_has_var($this->shmId, $counter);
-    	
-    	if($result == true)
-    	{
-    		$result = shm_get_var($this->shmId, $counter);
-    		if (!shm_put_var($this->shmId, 1, $counter))
-    		{
-    			$this->clear();
-    			throw new Exception();
-    		}
+    	// Now lets read the string back
+    	$result = shmop_read($this->shmId, 0, $bytes);
+    	if (!$result) {
+    		$this->clear();
+    		throw new Exception();
     	}
     	
-    	
+    	//Now lets delete the block and close the shared memory segment
+    	if (!shmop_delete($this->shmId)) {
+    		$this->clear();
+    		throw new Exception();
+    	}
+    	shmop_close($this->shmId);
     	
     	sem_release($this->semId);
     	
     	return $result;
     }
+//     public function begin()
+//     {
+//     	//get id of semaphore
+//     	$this->semId = sem_get($this->SEMKEY, 1);
+    	
+//     	//get id of shared memory
+//     	$this->shmId = shm_attach($this->SHMKEY, $this->MEMSIZE);
+    	
+//     	if (!sem_acquire($this->semId))
+//     	{
+//     		$this->clear();
+//     		throw new Exception();
+//     	}
+    	
+//     	$counter = shm_get_var($this->shmId, 1);
+//     	if($counter < 2)
+//     	{
+//     		sem_release($this->semId);
+//     		return false;
+//     	}
+//     	$counter = 2;
+    	
+//     	$result = shm_has_var($this->shmId, $counter);
+    	
+//     	if($result == true)
+//     	{
+//     		$result = shm_get_var($this->shmId, $counter);
+//     		if (!shm_put_var($this->shmId, 1, $counter))
+//     		{
+//     			$this->clear();
+//     			throw new Exception();
+//     		}
+//     	}
+    	
+    	
+    	
+//     	sem_release($this->semId);
+    	
+//     	return $result;
+//     }
     
 }

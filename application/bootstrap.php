@@ -232,5 +232,20 @@ Route::set('stopAnalyze', '(stopAnalyze(/<id>))')
 			'action'     => 'stopAnalyze',
 	));
 	
+Route::set('pauseAnalyze', '(pauseAnalyze(/<id>))')
+	->defaults(array(
+			'controller' => 'welcome',
+			'action'     => 'pauseAnalyze',
+	));
+	
+Route::set('continueAnalyze', '(continueAnalyze(/<id>))')
+	->defaults(array(
+			'controller' => 'welcome',
+			'action'     => 'continueAnalyze',
+	));
+	
+	
+	
+	
 	
 	

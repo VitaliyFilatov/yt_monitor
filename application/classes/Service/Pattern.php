@@ -310,7 +310,12 @@ class Service_Pattern
             $subtitle = $subtitle['result'];
             array_push($wordsstat, $this->parseContentAnalize($this->getContentAnaliz($subtitle)));
             array_push($videoIdsWithSubtls, $videoId);
-			$queue->pushToQueue(round($i/count($videoIds)*100));
+            $value = round($i/count($videoIds)*100);
+            while(strlen($value) < 3)
+            {
+            	$value = "0" . $value;
+            }
+            $queue->push($value);
             
         }
         $results = $this->getStatistics($wordsstat);
@@ -383,8 +388,9 @@ class Service_Pattern
      * @param Service_Queue $queue
      * @param Service_Queue $stopqueue
      * @param Service_Queue $pausequeue
+     * @param Service_Queue $channelsqueue
      */
-    public static function analizeChannel($request, $session, $channelId, $patternId, $queue, $stopqueue, $pausequeue)
+    public static function analizeChannel($request, $session, $channelId, $patternId, $queue, $stopqueue, $pausequeue, $channelsqueue)
     {
         $apiServicre = new Service_YTApi('1067254332521-4o8abvtsaj2sihjbj82qfa17j1vg8l6r.apps.googleusercontent.com',
             'oMbF7Zj1K9cCVXw3ZVGFN5z-');
@@ -398,11 +404,29 @@ class Service_Pattern
             }
             else 
             {
-            	foreach ($htmlBody['result'] as $videoId)
+            	foreach ($htmlBody['result'] as $key=>$videoId)
             	{
-            		$stop = $stopqueue->popStop();
+            		$stop = $stopqueue->pop(5);
             		if($stop == "astop")
             		{
+            			return array('return_type' => 0, 'result' => "true");
+            		}
+            		$pause = $pausequeue->pop(5);
+            		if($pause== "pause")
+            		{
+            			$sliced = array_slice($htmlBody['result'], $key);
+            			$slicedstr = implode(",", $sliced);
+            			$length = strlen($slicedstr);
+            			while(strlen($length)<5)
+            			{
+            				$length = "0" . $length;
+            			}
+            			$patternStr = $patternId;
+            			while(strlen($patternStr)<10)
+            			{
+            				$patternStr = "0" . $patternStr;
+            			}
+            			$pausequeue->push($length . $patternStr . $slicedstr);
             			return array('return_type' => 0, 'result' => "true");
             		}
             		if($videoId == null)

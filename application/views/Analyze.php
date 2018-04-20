@@ -142,7 +142,7 @@
                           <h3 id="infoDone" class="display-none">анализ завершён</h3>
                       </div>
                       <div class="card-body">
-                          <div id="scrollResult" class="pre-scrollable">
+                          <div id="scrollResult" class="pre-scrollable" style="max-height:300px;">
                               <div class="container">
                                   <ul id="resultList" class="list-group" style="color:#294a70;">
                                   </ul>
