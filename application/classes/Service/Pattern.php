@@ -293,7 +293,7 @@ class Service_Pattern
         return 1 - $dif / $maxDif;
     }
 
-    public function createPattern($patternName, $videoIds, $queue)
+    public function createPattern($patternName, $videoIds, $sessionid)
     {
         $genWords = $this->getGeneralWords("C:\\Server\\data\\htdocs\\yt_monitor\\files\\lemma.num");
         $videoIdsWithSubtls = array();
@@ -310,12 +310,7 @@ class Service_Pattern
             $subtitle = $subtitle['result'];
             array_push($wordsstat, $this->parseContentAnalize($this->getContentAnaliz($subtitle)));
             array_push($videoIdsWithSubtls, $videoId);
-            $value = round($i/count($videoIds)*100);
-            while(strlen($value) < 3)
-            {
-            	$value = "0" . $value;
-            }
-            $queue->push($value);
+            Model_CreateResult::addResult($sessionid, round($i/count($videoIds)*100));
             
         }
         $results = $this->getStatistics($wordsstat);
@@ -383,14 +378,36 @@ class Service_Pattern
         $word1 = $word1;
     }
     
-    /**
-     *
-     * @param Service_Queue $queue
-     * @param Service_Queue $stopqueue
-     * @param Service_Queue $pausequeue
-     * @param Service_Queue $channelsqueue
-     */
-    public static function analizeChannel($request, $session, $channelId, $patternId, $queue, $stopqueue, $pausequeue, $channelsqueue)
+    public static function analizeVideos($videoIds, $patternId, $sessionid)
+    {
+    	foreach ($videoIds as $key=>$videoId)
+    	{
+    		if(Model_StopAnalyze::isStop($sessionid))
+    		{
+    			return array('return_type' => 0, 'result' => "true");
+    		}
+    		if(Model_PauseAnalyze::isPause($sessionid))
+    		{
+    			$sliced = array_slice($videoIds, $key);
+    			Model_SaveResult::addResult($sessionid, $sliced, $patternId);
+    			return array('return_type' => 0, 'result' => "true");
+    		}
+    		if($videoId == null)
+    		{
+    			continue;
+    		}
+    		$sim = Service_Pattern::analizeVideo($videoId, new Pattern($patternId));
+    		if($sim == "nosub")
+    		{
+    			$sim = -1;
+    		}
+    		Model_Result::addResult($sessionid, $videoId, $sim);
+    	}
+    	return array('return_type' => 0, 'result' => "true");
+    }
+    
+    
+    public static function analizeChannel($request, $session, $channelId, $patternId, $sessionid)
     {
         $apiServicre = new Service_YTApi('1067254332521-4o8abvtsaj2sihjbj82qfa17j1vg8l6r.apps.googleusercontent.com',
             'oMbF7Zj1K9cCVXw3ZVGFN5z-');
@@ -404,52 +421,7 @@ class Service_Pattern
             }
             else 
             {
-            	foreach ($htmlBody['result'] as $key=>$videoId)
-            	{
-            		$stop = $stopqueue->pop(5);
-            		if($stop == "astop")
-            		{
-            			return array('return_type' => 0, 'result' => "true");
-            		}
-            		$pause = $pausequeue->pop(5);
-            		if($pause== "pause")
-            		{
-            			$sliced = array_slice($htmlBody['result'], $key);
-            			$slicedstr = implode(",", $sliced);
-            			$length = strlen($slicedstr);
-            			while(strlen($length)<5)
-            			{
-            				$length = "0" . $length;
-            			}
-            			$patternStr = $patternId;
-            			while(strlen($patternStr)<10)
-            			{
-            				$patternStr = "0" . $patternStr;
-            			}
-            			$pausequeue->push($length . $patternStr . $slicedstr);
-            			return array('return_type' => 0, 'result' => "true");
-            		}
-            		if($videoId == null)
-            		{
-            			continue;
-            		}
-            		$sim = Service_Pattern::analizeVideo($videoId, new Pattern($patternId));
-            		if($sim != "nosub")
-            		{
-            			if($sim < 0.001)
-            			{
-            				$sim = 0;
-            			}
-            			$sim = substr($sim, 0, 5);
-            		}
-            		while(strlen($sim) < 5)
-            		{
-            			$sim = " " . $sim;
-            		}
-            		$toqueue = $videoId. substr($sim, 0, 5);
-            		$queue->push($toqueue);
-            	}
-            	return array('return_type' => 0, 'result' => "true");
+            	return Service_Pattern::analizeVideos($htmlBody['result'], $patternId, $sessionid);
             }
         }
         catch(Exception $e)

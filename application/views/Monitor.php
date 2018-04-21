@@ -68,15 +68,15 @@
                   <h3 class="masthead-brand"><img src="media/logo-2.png" width="40" />  YTMonitor</h3>
                   <nav class="nav nav-masthead justify-content-center">
                       <a class="nav-link" href="test">Подготовка(генерация паттерна)</a>
-                      <a class="nav-link active" href="analyze">Анализ каналов</a>
-                      <a class="nav-link" href="#">Мониторинг каналов</a>
+                      <a class="nav-link" href="analyze">Анализ каналов</a>
+                      <a class="nav-link active" href="#">Мониторинг каналов</a>
                   </nav>
               </div>
           </header>
           <div id="authContainer" style="display:none"></div>
           <div class="row">
               <div id="channelPanel" class="col">
-                  <h2>Список каналов для анализа</h2>
+                  <h2>Список каналов для мониторинга</h2>
                   
                   <div class="card" style="color:#294a70;">
                       <div class="card-body">
@@ -115,7 +115,7 @@
                       </div>
                       <div class="card-footer">
                           <button id="addChanelBtn" type="button" class="btn btn-outline-primary btn-outline-darkblue btn-block">Добавить канал</button>
-                          <button id="startAnalyzeBtn" type="button" class="btn btn-outline-primary btn-outline-darkblue btn-block">Анализ каналов</button>
+                          <button id="startAnalyzeBtn" type="button" class="btn btn-outline-primary btn-outline-darkblue btn-block">Мониторинг каналов</button>
                           <button id="editParametersBtn" type="button" class="btn btn-outline-primary btn-outline-darkblue btn-block display-none">Вернуться к редактированию</button>
                       </div>
                   </div>
@@ -139,8 +139,8 @@
                   <h2>Результаты анализа</h2>
                   <div class="card" style="color:#294a70;">
                       <div class="card-header">
-                          <h3 id="infoWork" class="display-none">производится анализ</h3>
-                          <h3 id="infoDone" class="display-none">анализ завершён</h3>
+                          <h3 id="infoWork" class="display-none">производится мониторинг</h3>
+                          <h3 id="infoDone" class="display-none">мониторинг остановлен</h3>
                       </div>
                       <div class="card-body">
                           <div id="scrollResult" class="pre-scrollable">
@@ -151,16 +151,8 @@
                           </div>
                       </div>
                       <div class="card-footer">
-                          <div class="row">
-                              <div class="col">
-                                  <button id="stopAnalyzeBtn" type="button" class="btn btn-outline-primary btn-outline-darkblue btn-block">Остановить анализ</button>
-                              </div>
-                              <div class="col">
-                                  <button id="pauseAnalyzeBtn" type="button" class="btn btn-outline-primary btn-outline-darkblue btn-block" style="margin-top: 0px;">Пауза</button>
-                                  <button id="continueBtn" type="button" class="btn btn-outline-primary btn-outline-darkblue btn-block display-none" style="margin-top: 0px;">Продолжить</button>
-                                  <button id="startAgainBtn" type="button" class="btn btn-outline-primary btn-outline-darkblue btn-block display-none" style="margin-top: 0px;">Начать заново</button>
-                              </div>
-                          </div>
+                          <button id="stopAnalyzeBtn" type="button" class="btn btn-outline-primary btn-outline-darkblue btn-block">Остановить мониторинг</button>
+                          <button id="continueBtn" type="button" class="btn btn-outline-primary btn-outline-darkblue btn-block display-none">Продолжить мониторинг</button>
                       </div>
                   </div>
               </div>
@@ -179,7 +171,7 @@
     <script src="media/Cover Template for Bootstrap_files/popper.min.js.Без названия"></script>
     <script src="media/Cover Template for Bootstrap_files/bootstrap.min.js.Без названия"></script>
     <script src="media/js/libs/jquery-3.2.1.js"></script>
-    <script src="media/js/analyze.js"></script>
+    <script src="media/js/monitor.js"></script>
   
 
 </body></html>

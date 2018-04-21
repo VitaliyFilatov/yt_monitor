@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="">
     <meta name="author" content="">
-    <link rel="icon" href="logo-2.png">
+    <link rel="icon" href="media/logo-2.png">
 
     <title>YouTube's monitor</title>
 
@@ -66,7 +66,7 @@
       <div class="d-flex w-100 h-100 p-3 mx-auto flex-column">
           <header class="masthead mb-auto">
               <div class="inner">
-                  <h3 class="masthead-brand">YTMonitor</h3>
+                  <h3 class="masthead-brand"><img src="media/logo-2.png" width="40" />  YTMonitor</h3>
                   <nav class="nav nav-masthead justify-content-center">
                       <a class="nav-link active" href="test">Подготовка(генерация паттерна)</a>
                       <a class="nav-link" href="analyze">Анализ каналов</a>

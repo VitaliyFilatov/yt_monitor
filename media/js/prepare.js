@@ -26,15 +26,19 @@ function searchPatternById(id)
     return false;
 }
 
+function clearProgress()
+{
+    for(var i=0;i< 20; i++)
+    {
+       saveProgress.classList.remove("w-" + (i*5 +  5)); 
+    }
+}
+
 function showEditPanel()
 {
     mainPanel.classList.remove("w-50");
     mainPanel.classList.remove("mx-auto");
     editPanel.classList.remove("display-none");
-    for(var i=0;i< 20; i++)
-    {
-       saveProgress.classList.remove("w-" + (i*5 +  5)); 
-    }
 }
 
 function onAddPatternBtnClick()
@@ -60,6 +64,7 @@ function onSaveBtnClick()
     {
         sessionid = sessionid.substr(0, sessionid.indexOf(";")); 
     }
+    clearProgress();
     saveProgress.parentElement.classList.remove("display-none");
     subResult = true;
     $.ajax({
@@ -101,7 +106,6 @@ function onSaveBtnClick()
                 var el = $("#id" + editedPattern.id)[0];
                 el.remove();
             }
-            editedPattern = -1;
             patternList.appendChild(li);
             $("#editPatternBtn" + data.id)[0].addEventListener("click",onEditPatternBtnClick);
             $("#removePatternBtn" + data.id)[0].addEventListener("click",onDeletePatternBtnClick);
@@ -131,8 +135,8 @@ function getSubResultSavePattern()
         success: function(data, textStatus, jqXHR )
         {
             console.log("data: "+data);
-            oldValue = data;
-            if(oldValue != 101)
+            //oldValue = data;
+            if(data != "")
             {
                 if(saveProgressWidthClass != "")
                 {

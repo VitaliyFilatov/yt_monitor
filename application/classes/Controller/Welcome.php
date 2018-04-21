@@ -26,21 +26,17 @@ class Controller_Welcome extends Controller {
 		$videoIds = $body['videoIds'];
 		$videoIds = explode(",",$videoIds);
 	    $servicePattern = new Service_Pattern();
-	    $sessionid = $body['sessionid'] . 'c';
-	    if(Model_Share::sharedExist($sessionid) === false)
-	    {
-	    	Model_Share::createShared($sessionid);
-	    }
-	    $sharedid = Model_Share::getShareId($sessionid);
+	    $sessionid = $body['sessionid'];
+	    Model_CreateResult::init($sessionid);
 	    try
 	    {
-	    	$queue = new Service_Queue(512, $sharedid, $sharedid);
-	    	$queue->init();
-	    	$pattern = $servicePattern->createPattern($patternName, $videoIds, $queue);
+	    	$pattern = $servicePattern->createPattern($patternName, $videoIds, $sessionid);
+	    	Model_CreateResult::init($sessionid);
 	    	echo json_encode($pattern);
 	    }
 	    catch(Exception $e)
 	    {
+	    	Model_CreateResult::init($sessionid);
 	    	echo json_encode(array('type'=>0, 'result'=>false));
 	    }
 	}
@@ -48,123 +44,35 @@ class Controller_Welcome extends Controller {
 	public function action_getSubResult()
 	{
 		$body = $this->request->post();
-		$oldValue = $body['oldValue'];
-		$sessionid = $body['sessionid'] . 'c';
-		if(Model_Share::sharedExist($sessionid) === false)
-		{
-			Model_Share::createShared($sessionid);
-		}
-		$sharedid = Model_Share::getShareId($sessionid);
-		$queue = new Service_Queue(512, $sharedid, $sharedid);
-		$subResult;
-		while(true)
-		{
-			$subResult = $queue->pop(3);
-			if($oldValue == 0)
-			{
-				if($subResult != "101")
-				{
-					$subResult = 0;
-				}
-				break;
-			}
-			if($oldValue == $subResult)
-			{
-				continue;
-			}
-			break;
-		}
-		echo $subResult;
+		$sessionid = $body['sessionid'];
+		return Model_CreateResult::popResult($sessionid);
 	}
 	
 	public function action_getSubResultResAnalyze()
 	{
 		$body = $this->request->post();
-		$lastVideoId= $body['lastVideoId'];
-		$subResult;
 		$sessionid = $body['sessionid'];
-		if(Model_Share::sharedExist($sessionid) === false)
-		{
-			Model_Share::createShared($sessionid);
-		}
-		$sharedid = Model_Share::getShareId($sessionid);
-		$queue = new Service_Queue(512, $sharedid, $sharedid);
-		while(true)
-		{
-			$subResult = $queue->pop(16);
-			if($lastVideoId == "")
-			{
-				if($subResult != "????????????????")
-				{
-					$subResult = "????????????????";
-				}
-				break;
-			}
-			if($lastVideoId == $subResult)
-			{
-				continue;
-			}
-			break;
-		}
-		echo $subResult;
+		echo json_encode(Model_Result::popResult($sessionid));
 	}
 	
 	public function action_analyzeChannels()
 	{
 		$request = $this->request;
 		$session = Session::instance();
-		$servicePattern = new Service_Pattern();
 		
 		$body = $this->request->post();
+		
 		$sessionid = $body['sessionid'];
-		
-		if(Model_Share::sharedExist($sessionid) === false)
-		{
-			Model_Share::createShared($sessionid);
-		}
-		$sharedid = Model_Share::getShareId($sessionid);
-		
-		$queue = new Service_Queue(512, $sharedid, $sharedid);
-		$queue->initResAnalyze();
-		
-		$stopanalyze = $sessionid . "stop";
-		if(Model_Share::sharedExist($stopanalyze) === false)
-		{
-			Model_Share::createShared($stopanalyze);
-		}
-		$sharedid = Model_Share::getShareId($stopanalyze);
-		
-		$stopqueue = new Service_Queue(512, $sharedid, $sharedid);
-		$stopqueue->initStop();
-		
-		$pauseanalyze = $sessionid . "pause";
-		if(Model_Share::sharedExist($pauseanalyze) === false)
-		{
-			Model_Share::createShared($pauseanalyze);
-		}
-		$sharedid = Model_Share::getShareId($pauseanalyze);
-		
-		$pausequeue = new Service_Queue(512, $sharedid, $sharedid);
-		$pausequeue->initStop();
-		
-		$channelsnalyze = $sessionid . "channels";
-		if(Model_Share::sharedExist($channelsnalyze) === false)
-		{
-			Model_Share::createShared($channelsnalyze);
-		}
-		$sharedid = Model_Share::getShareId($channelsnalyze);
-		
 		$channelIds = $body['channelIds'];
-		$channelsStr = implode(",", $channelIds);
-		
-		$channelsqueue = new Service_Queue(strlen($channelsStr)+15, $sharedid, $sharedid);
-		$channelsqueue->initPause();
 		$patternId = $body['patternId'];
+		
+		Model_StopAnalyze::init($sessionid);
+		Model_PauseAnalyze::init($sessionid);
 		
 		
 		foreach($channelIds as $channelId)
 		{
-			$result = Service_Pattern::analizeChannel($request, $session, $channelId, $patternId, $queue, $stopqueue, $pausequeue, $channelsqueue);
+			$result = Service_Pattern::analizeChannel($request, $session, $channelId, $patternId, $sessionid);
 			if($result['return_type'] !== 0)
 			{
 				echo json_encode($result);
@@ -183,66 +91,27 @@ class Controller_Welcome extends Controller {
 		$body = $this->request->post();
 		$sessionid = $body['sessionid'];
 		
-		if(Model_Share::sharedExist($sessionid) === false)
+		$saved = Model_SaveResult::popAllResults($sessionid);
+		
+		if(empty($saved))
 		{
-			Model_Share::createShared($sessionid);
+			echo json_encode(array('return_type' => 0, 'result' => "false"));
+			return;
 		}
-		$sharedid = Model_Share::getShareId($sessionid);
-		
-		$queue = new Service_Queue(512, $sharedid, $sharedid);
-		$queue->initResAnalyze();
-		
-		$stopanalyze = $sessionid . "stop";
-		if(Model_Share::sharedExist($stopanalyze) === false)
+		$videoIds = array();
+		foreach($saved as $res)
 		{
-			Model_Share::createShared($stopanalyze);
+			array_push($videoIds, $res['videoid']);
 		}
-		$sharedid = Model_Share::getShareId($stopanalyze);
+		$patternId = $saved[0]['patternid'];
+		Model_PauseAnalyze::init($sessionid);
+		Model_StopAnalyze::init($sessionid);
+		$result = Service_Pattern::analizeVideos($videoIds, $patternId, $sessionid);
 		
-		$stopqueue = new Service_Queue(512, $sharedid, $sharedid);
-		$stopqueue->initStop();
-		
-		$pauseanalyze = $sessionid . "pause";
-		if(Model_Share::sharedExist($pauseanalyze) === false)
+		if($result['return_type'] !== 0)
 		{
-			Model_Share::createShared($pauseanalyze);
-		}
-		$sharedid = Model_Share::getShareId($pauseanalyze);
-		
-		$pausequeue = new Service_Queue(512, $sharedid, $sharedid);
-		$pausequeue->initStop();
-		
-		$channelsnalyze = $sessionid . "channels";
-		if(Model_Share::sharedExist($channelsnalyze) === false)
-		{
-			Model_Share::createShared($channelsnalyze);
-		}
-		$sharedid = Model_Share::getShareId($channelsnalyze);
-		
-		$channelsqueue = new Service_Queue(5, $sharedid, $sharedid);
-		
-		$length = $channelsqueue->pop(5);
-		
-		$length = $length + 0;
-		
-		$channelsqueue = new Service_Queue($length + 15, $sharedid, $sharedid);
-		
-		$str = $channelsqueue->pop($length + 15);
-		
-		$patternId = substr($str, 5, 10);
-		$patternId = $patternId + 0;
-		
-		$channelIds = substr($str, 15);
-		$channelIds = explode(",", $channelIds);
-		
-		foreach($channelIds as $channelId)
-		{
-			$result = Service_Pattern::analizeChannel($request, $session, $channelId, $patternId, $queue, $stopqueue, $pausequeue, $channelsqueue);
-			if($result['return_type'] !== 0)
-			{
-				echo json_encode($result);
-				return;
-			}
+			echo json_encode($result);
+			return;
 		}
 		echo json_encode(array('return_type' => 0, 'result' => "true"));
 	}
@@ -252,15 +121,7 @@ class Controller_Welcome extends Controller {
 		$body = $this->request->post();
 		$sessionid = $body['sessionid'];
 		
-		$stopanalyze = $sessionid . "stop";
-		if(Model_Share::sharedExist($stopanalyze) === false)
-		{
-			Model_Share::createShared($stopanalyze);
-		}
-		$sharedid = Model_Share::getShareId($stopanalyze);
-		
-		$queue = new Service_Queue(512, $sharedid, $sharedid);
-		$queue->push("astop");
+		Model_StopAnalyze::stop($sessionid);
 	}
 	
 	public function action_pauseAnalyze()
@@ -268,15 +129,7 @@ class Controller_Welcome extends Controller {
 		$body = $this->request->post();
 		$sessionid = $body['sessionid'];
 		
-		$pauseanalyze = $sessionid . "pause";
-		if(Model_Share::sharedExist($pauseanalyze) === false)
-		{
-			Model_Share::createShared($pauseanalyze);
-		}
-		$sharedid = Model_Share::getShareId($pauseanalyze);
-		
-		$queue = new Service_Queue(512, $sharedid, $sharedid);
-		$queue->push("pause");
+		Model_PauseAnalyze::pause($sessionid);
 	}
 	
 	public function action_analyzeChannel()
@@ -323,7 +176,8 @@ class Controller_Welcome extends Controller {
 		$result = $apiServicre->authorize("authorize", $request, $session);
 		if($result === 1)
 		{
-			$this->response->body(View::factory('Analyze'));
+			header('Location: ' . 'http://' . $_SERVER['HTTP_HOST'] . "/analyze");
+			exit();
 		}
 		else if($result === 0)
 		{
