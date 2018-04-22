@@ -1,14 +1,14 @@
 <?php defined('SYSPATH') or die('No direct script access.');
 
-class Model_Result extends Model_Base
+class Model_MonitorResult extends Model_Base
 {
-	protected $_table_name = 'result';
+	protected $_table_name = 'monitor_result';
 	
-	protected static $model = 'Result';
+	protected static $model = 'MonitorResult';
 	
 	public static function init($sessionid)
 	{
-		$sql = "DELETE FROM `yt_monitor`.`result`
+		$sql = "DELETE FROM `yt_monitor`.`monitor_result`
 				WHERE `sessionid`=:sessionid";
 		$query = DB::query(Database::DELETE, $sql);
 		$query->param(':sessionid', $sessionid);
@@ -17,7 +17,7 @@ class Model_Result extends Model_Base
 	
 	public static function addResult($sessionid, $videoid, $sim)
 	{
-		$sql = "INSERT INTO `yt_monitor`.`result`
+		$sql = "INSERT INTO `yt_monitor`.`monitor_result`
 				(`sessionid`, `videoid`, `sim`)
 				VALUES(:sessionid, :videoid, :sim)";
 		$query = DB::query(Database::INSERT, $sql);
@@ -27,36 +27,9 @@ class Model_Result extends Model_Base
 		$query->execute();
 	}
 	
-	public static function popResult($sessionid)
-	{
-		$sql = "SELECT * FROM `yt_monitor`.`result`
-                WHERE `sessionid` = :sessionid AND id = (
-				SELECT MIN(`id`) FROM `yt_monitor`.`result` WHERE `sessionid`=:sessionid);";
-		$query = DB::query(Database::SELECT, $sql);
-		$query->param(':sessionid', $sessionid);
-		$result = $query->execute()->as_array();
-		
-		
-		if(empty($result))
-		{
-			return null;
-		}
-		
-		$result = $result[0];
-		
-		$sql = "DELETE FROM `yt_monitor`.`result`
-				WHERE `id`=:id";
-		$query = DB::query(Database::DELETE, $sql);
-		$query->param(':id', $result['id']);
-		$query->execute();
-		
-		return $result;
-	}
-	
-	
 	public static function popAllResults($sessionid)
 	{
-		$sql = "SELECT * FROM `yt_monitor`.`result`
+		$sql = "SELECT * FROM `yt_monitor`.`monitor_result`
                 WHERE `sessionid` = :sessionid;";
 		$query = DB::query(Database::SELECT, $sql);
 		$query->param(':sessionid', $sessionid);
@@ -75,7 +48,7 @@ class Model_Result extends Model_Base
 			array_push($ids, $result['id']);
 		}
 		
-		$sql = "DELETE FROM `yt_monitor`.`result`
+		$sql = "DELETE FROM `yt_monitor`.`monitor_result`
 				WHERE `id` IN (" . implode(",",$ids) . ")";
 		$query = DB::query(Database::DELETE, $sql);
 		$query->execute();

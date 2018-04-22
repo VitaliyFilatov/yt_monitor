@@ -62,6 +62,7 @@
   </head>
 
 <body class="text-center" style="background-color:#294a70;">
+    <div id="sessionid" class="display-none"><?php echo $sessionid; ?></div>
       <div class="d-flex w-100 h-100 p-3 mx-auto flex-column">
           <header class="masthead" style="margin-bottom:5%">
               <div class="inner">
@@ -69,7 +70,7 @@
                   <nav class="nav nav-masthead justify-content-center">
                       <a class="nav-link" href="test">Подготовка(генерация паттерна)</a>
                       <a class="nav-link active" href="analyze">Анализ каналов</a>
-                      <a class="nav-link" href="#">Мониторинг каналов</a>
+                      <a class="nav-link" href="monitor">Мониторинг каналов</a>
                   </nav>
               </div>
           </header>
@@ -136,11 +137,14 @@
               </div>
               
               <div id="resultPanel" class="col-sm-7 display-none">
-                  <h2>Результаты анализа</h2>
+                  <h2 id="infoWork" class="display-none">Результаты анализа: производится анализ</h2>
+                  <h2 id="infoDone" class="display-none">Результаты анализа: анализ завершён</h2>
                   <div class="card" style="color:#294a70;">
                       <div class="card-header">
-                          <h3 id="infoWork" class="display-none">производится анализ</h3>
-                          <h3 id="infoDone" class="display-none">анализ завершён</h3>
+                          <div class="row" style="padding-right:65px; padding-left:50px;">
+                              <div class="col-sm-7">id видео</div>
+                              <div class="col-sm-5">Деструктивность [0,1]</div>
+                          </div>
                       </div>
                       <div class="card-body">
                           <div id="scrollResult" class="pre-scrollable">
@@ -162,7 +166,6 @@
                               </div>
                           </div>
                       </div>
-                  </div>
               </div>
           </div>
           <footer class="mastfoot mt-auto">

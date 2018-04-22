@@ -70,7 +70,7 @@
                   <nav class="nav nav-masthead justify-content-center">
                       <a class="nav-link active" href="test">Подготовка(генерация паттерна)</a>
                       <a class="nav-link" href="analyze">Анализ каналов</a>
-                      <a class="nav-link" href="#">Мониторинг каналов</a>
+                      <a class="nav-link" href="monitor">Мониторинг каналов</a>
                   </nav>
               </div>
           </header>

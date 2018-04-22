@@ -1,5 +1,5 @@
 var patternList = $("#patternList")[0];
-var startAnalyzeBtn = $("#startAnalyzeBtn")[0];
+var startMonitorBtn = $("#startMonitorBtn")[0];
 var patternPanel = $("#patternPanel")[0];
 var resultPanel = $("#resultPanel")[0];
 var channelPanel = $("#channelPanel")[0];
@@ -20,6 +20,8 @@ var scrollResult = $("#scrollResult")[0];
 var continueBtn = $("#continueBtn")[0];
 var startAgainBtn = $("#startAgainBtn")[0];
 var editParametersBtn = $("#editParametersBtn")[0];
+
+var monitorStep=15000;
 
 var idPatternActive="";
 
@@ -88,59 +90,15 @@ function onStartPage()
 }
 
 
-function onStartAnalyzeBtnClick()
+function monitorChannels(channelIds, patternId, sessionId, lastVideoId)
 {
-    while(resultList.children.length)
-    {
-        resultList.children[0].remove();
-    }
-    insertChannel.classList.add("display-none");
-    
-    var channelBtn = $("[name*='channelBtn']");
-    for(var i=0;i<channelBtn.length;i++)
-    {
-        channelBtn[i].classList.add("display-none");
-    }
-    
-    var channelId = $("[name*='channelId']");
-    for(var i=0;i<channelBtn.length;i++)
-    {
-        channelId[i].classList.remove("col-sm-5");
-        channelId[i].classList.add("col-sm-7");
-    }
-    
-    patternPanel.classList.add("display-none");
-    channelPanel.classList.remove("col");
-    channelPanel.classList.add("col-sm-5");
-    resultPanel.classList.remove("display-none");
-    
-    startAnalyzeBtn.classList.add("display-none");
-    pauseAnalyzeBtn.classList.remove("display-none");
-    startAgainBtn.classList.add("display-none");
-    addChanelBtn.classList.add("display-none");
-    editParametersBtn.classList.remove("display-none");
-    lastVideoId="";
-    infoWork.classList.remove("display-none");
-    infoDone.classList.add("display-none");
-    subAnalyze=true;
-    var rows = channelList.children;
-    var channelIds=[];
-    for(var i=0; i < rows.length - 1; i++)
-    {
-        if(rows[i].id != "unusedChannel")
-        {
-            channelIds.push(rows[i].id.substr(9));
-        }
-    }
-    
-    var sessionid = getSessionId();
-    
     $.ajax({
-        url: "analyzeChannels",
+        url: "checkLastVideos?XDEBUG_SESSION_START=ECLIPSE_DBGP",
         type: "POST",
         data: {channelIds : channelIds,
-               patternId : idPatternActive.substr(2),
-               sessionid : sessionid},
+               patternId : patternId,
+               sessionid : sessionId,
+               lastVideoId : lastVideoId},
         error: function(jqXHR, textStatus, errorThrown )
         {
             console.log("error: " + errorThrown);
@@ -156,21 +114,98 @@ function onStartAnalyzeBtnClick()
                 authContainer.innerHTML = data.result;
                 $("#authLink")[0].click();
             }
-            subAnalyze = false;
-            infoWork.classList.add("display-none");
-            infoDone.classList.remove("display-none");
-            lastVideoId="";
-//            if(data.return_type == 1)
-//            {
-//                authLink.parentElement.classList.remove("display-none");
-//                authLink.href = data.result;
-//            }
-//            subAnalyze = false;
-//            console.log("data: " + data);
+            else
+            {
+                console.log(data);
+                data = data.result;
+                if(data != null)
+                {
+                    for(var i=0;i<data.length;i++)
+                    {
+                        var videoId = data[i].videoid;
+                        var similarity = data[i].sim
+                        if(similarity == -1)
+                        {
+                            similarity = "нет субтитров";
+                        }
+                        var li = document.createElement("li");
+                        li.classList.add("list-group-item");
+                        li.innerHTML = '<div class="row"><div class="col-sm-7">' + videoId + 
+                                '</div><div class="col-sm-5">' + similarity + '</div>'; 
+                        resultList.appendChild(li);
+                        scrollResult.scrollTop = scrollResult.scrollHeight
+                        if(i == data.length - 1)
+                        {
+                            lastVideoId = videoId;
+                        }
+                    }
+                }
+                //after.setTime(after.getTime() + monitorStep);
+                setTimeout(monitorChannels, monitorStep, channelIds, patternId, sessionId, lastVideoId);
+            }
         }
     });
+}
+
+function onStartMonitorBtnClick()
+{
+    //clear result panel from old record
+    while(resultList.children.length)
+    {
+        resultList.children[0].remove();
+    }
+    //hide insert channel
+    insertChannel.classList.add("display-none");
     
-    getSubResultAnalyze();
+    //hide remove channel button
+    var channelBtn = $("[name*='channelBtn']");
+    for(var i=0;i<channelBtn.length;i++)
+    {
+        channelBtn[i].classList.add("display-none");
+    }
+    
+    //wide id chanel in channel list
+    var channelId = $("[name*='channelId']");
+    for(var i=0;i<channelBtn.length;i++)
+    {
+        channelId[i].classList.remove("col-sm-5");
+        channelId[i].classList.add("col-sm-7");
+    }
+    
+    //hide pattern panel, wide channel panel and show result panel
+    patternPanel.classList.add("display-none");
+    channelPanel.classList.remove("col");
+    channelPanel.classList.add("col-sm-5");
+    resultPanel.classList.remove("display-none");
+    
+    //hide start monitoring button
+    startMonitorBtn.classList.add("display-none");
+    
+    //show pause button, hide start again button, hide button of add channel
+    //pauseAnalyzeBtn.classList.remove("display-none");
+    //startAgainBtn.classList.add("display-none");
+    addChanelBtn.classList.add("display-none");
+    //show button of retur to edit parameters of monitoring
+    editParametersBtn.classList.remove("display-none");
+    //hide and show needed info
+    infoWork.classList.remove("display-none");
+    infoDone.classList.add("display-none");
+    subAnalyze=true;
+    var rows = channelList.children;
+    var channelIds=[];
+    for(var i=0; i < rows.length - 1; i++)
+    {
+        if(rows[i].id != "unusedChannel")
+        {
+            channelIds.push(rows[i].id.substr(9));
+        }
+    }
+    
+    var sessionid = getSessionId();
+    
+    var lastVideoId = "";
+    
+    monitorChannels(channelIds, idPatternActive.substr(2), sessionid, lastVideoId);
 }
 
 function getSubResultAnalyze()
@@ -189,7 +224,9 @@ function getSubResultAnalyze()
         success: function(data, textStatus, jqXHR )
         {
             console.log("subdata: "+data);
-            if(data != "null")
+            data = JSON.parse(data);
+            data = data.result
+            if(data != null)
             {
                 data = JSON.parse(data);
                 var videoId = data.videoid;
@@ -366,7 +403,7 @@ function onPatternClick()
 
 function onEditParametersBtnClick()
 {
-    startAnalyzeBtn.classList.remove("display-none");
+    startMonitorBtn.classList.remove("display-none");
     addChanelBtn.classList.remove("display-none");
     editParametersBtn.classList.add("display-none");
     
@@ -390,12 +427,12 @@ function onEditParametersBtnClick()
     stopAnalyzeBtn.click();
 }
 
-startAnalyzeBtn.addEventListener("click", onStartAnalyzeBtnClick);
+startMonitorBtn.addEventListener("click", onStartMonitorBtnClick);
 window.addEventListener("load", onStartPage);
 addChanelBtn.addEventListener("click", onAddChanelBtnClick);
 insertChannelBtn.addEventListener("click", onInsertChannelBtnClick);
 stopAnalyzeBtn.addEventListener("click", onStopAnalyzeBtnClick);
 editParametersBtn.addEventListener("click", onEditParametersBtnClick);
-pauseAnalyzeBtn.addEventListener("click", onPauseAnalyzeBtnClick);
+//pauseAnalyzeBtn.addEventListener("click", onPauseAnalyzeBtnClick);
 continueBtn.addEventListener("click", onContinueBtnClick);
-startAgainBtn.addEventListener("click", onStartAgainBtnClick);
+//startAgainBtn.addEventListener("click", onStartAgainBtnClick);

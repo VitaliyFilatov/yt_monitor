@@ -244,6 +244,23 @@ Route::set('continueAnalyze', '(continueAnalyze(/<id>))')
 			'action'     => 'continueAnalyze',
 	));
 	
+Route::set('checkLastVideos', '(checkLastVideos(/<id>))')
+	->defaults(array(
+			'controller' => 'welcome',
+			'action'     => 'checkLastVideos',
+	));
+	
+Route::set('monitor', '(monitor(/<id>))')
+	->defaults(array(
+			'controller' => 'welcome',
+			'action'     => 'monitor',
+	));
+	
+Route::set('authorizeMonitor', '(authorizeMonitor(/<id>))')
+	->defaults(array(
+			'controller' => 'welcome',
+			'action'     => 'authorizeMonitor',
+	));
 	
 	
 	

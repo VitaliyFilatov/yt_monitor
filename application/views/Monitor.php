@@ -115,7 +115,7 @@
                       </div>
                       <div class="card-footer">
                           <button id="addChanelBtn" type="button" class="btn btn-outline-primary btn-outline-darkblue btn-block">Добавить канал</button>
-                          <button id="startAnalyzeBtn" type="button" class="btn btn-outline-primary btn-outline-darkblue btn-block">Мониторинг каналов</button>
+                          <button id="startMonitorBtn" type="button" class="btn btn-outline-primary btn-outline-darkblue btn-block">Мониторинг каналов</button>
                           <button id="editParametersBtn" type="button" class="btn btn-outline-primary btn-outline-darkblue btn-block display-none">Вернуться к редактированию</button>
                       </div>
                   </div>

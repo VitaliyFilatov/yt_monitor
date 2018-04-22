@@ -406,6 +406,34 @@ class Service_Pattern
     	return array('return_type' => 0, 'result' => "true");
     }
     
+    public static function analizeMonitorVideos($videoIds, $patternId, $sessionid)
+    {
+    	foreach ($videoIds as $key=>$videoId)
+    	{
+    		if(Model_StopAnalyze::isStop($sessionid))
+    		{
+    			return array('return_type' => 0, 'result' => "true");
+    		}
+    		if(Model_PauseAnalyze::isPause($sessionid))
+    		{
+    			$sliced = array_slice($videoIds, $key);
+    			Model_SaveResult::addResult($sessionid, $sliced, $patternId);
+    			return array('return_type' => 0, 'result' => "true");
+    		}
+    		if($videoId == null)
+    		{
+    			continue;
+    		}
+    		$sim = Service_Pattern::analizeVideo($videoId, new Pattern($patternId));
+    		if($sim == "nosub")
+    		{
+    			$sim = -1;
+    		}
+    		Model_MonitorResult::addResult($sessionid, $videoId, $sim);
+    	}
+    	return array('return_type' => 0, 'result' => "true");
+    }
+    
     
     public static function analizeChannel($request, $session, $channelId, $patternId, $sessionid)
     {
@@ -413,7 +441,7 @@ class Service_Pattern
             'oMbF7Zj1K9cCVXw3ZVGFN5z-');
         try
         {
-            $apiServicre->authorize("analyze", $request, $session);
+            $apiServicre->authorize("authorize", $request, $session);
             $htmlBody = $apiServicre->getChannelsVideo($session, $channelId);
             if($htmlBody['return_type'] == 1)
             {
@@ -428,6 +456,44 @@ class Service_Pattern
         {
         	return array('return_type' => 2, 'result' => $e->getMessage());
         }
+    }
+    
+    public static function checkLastVideos($request, $session, $channelIds, $patternId, $sessionid, $lastVideoId)
+    {
+    	$apiServicre = new Service_YTApi('1067254332521-4o8abvtsaj2sihjbj82qfa17j1vg8l6r.apps.googleusercontent.com',
+    			'oMbF7Zj1K9cCVXw3ZVGFN5z-');
+    	try
+    	{
+    		$apiServicre->authorize("authorizeMonitor", $request, $session);
+    		$videoIds = array();
+    		foreach($channelIds as $channelId)
+    		{
+    			$htmlBody = $apiServicre->getLastChannelsVideo($session, $channelId);
+    			if($htmlBody['return_type'] == 1)
+    			{
+    				return $htmlBody;
+    			}
+    			else 
+    			{
+    				if($htmlBody['result'][0] == $lastVideoId)
+    				{
+    					return array('return_type' => 0, 'result' => null);
+    				}
+    				$videoIds = array_merge($videoIds, $htmlBody['result']);
+    			}
+    		}
+    		if(!empty($videoIds))
+    		{
+    			Service_Pattern::analizeMonitorVideos($videoIds, $patternId, $sessionid);
+    			return array('return_type' => 0,
+    					'result' => Model_MonitorResult::popAllResults($sessionid));
+    		}
+    		return array('return_type' => 0, 'result' => null);
+    	}
+    	catch(Exception $e)
+    	{
+    		return array('return_type' => 2, 'result' => $e->getMessage());
+    	}
     }
     
 }

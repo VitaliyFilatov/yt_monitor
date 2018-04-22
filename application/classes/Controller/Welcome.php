@@ -16,7 +16,16 @@ class Controller_Welcome extends Controller {
 	
 	public function action_analyze()
 	{
-		$this->response->body(View::factory('Analyze'));
+		$date = new DateTime();
+		$data = array(
+				'sessionid' => Session::instance()->id() . $date->getTimestamp()
+		);
+		$this->response->body(View::factory('Analyze', $data));
+	}
+	
+	public function action_monitor()
+	{
+		$this->response->body(View::factory('Monitor'));
 	}
 	
 	public function action_createPattern()
@@ -45,14 +54,14 @@ class Controller_Welcome extends Controller {
 	{
 		$body = $this->request->post();
 		$sessionid = $body['sessionid'];
-		return Model_CreateResult::popResult($sessionid);
+		echo Model_CreateResult::popResult($sessionid);
 	}
 	
 	public function action_getSubResultResAnalyze()
 	{
 		$body = $this->request->post();
 		$sessionid = $body['sessionid'];
-		echo json_encode(Model_Result::popResult($sessionid));
+		echo json_encode(Model_Result::popAllResults($sessionid));
 	}
 	
 	public function action_analyzeChannels()
@@ -79,7 +88,7 @@ class Controller_Welcome extends Controller {
 				return;
 			}
 		}
-		echo json_encode(array('return_type' => 0, 'result' => "true"));
+		echo json_encode(array('return_type' => 0, 'result' => Model_Result::popAllResults($sessionid)));
 	}
 	
 	public function action_continueAnalyze()
@@ -148,6 +157,23 @@ class Controller_Welcome extends Controller {
 	    echo json_encode($result);
 	    
 	}
+	public function action_checkLastVideos()
+	{
+		$request = $this->request;
+		$session = Session::instance();
+		
+		$body = $this->request->post();
+		
+		$sessionid = $body['sessionid'];
+		$channelIds = $body['channelIds'];
+		$patternId = $body['patternId'];
+		$lastVideoId = $body['lastVideoId'];
+		
+		Model_StopAnalyze::init($sessionid);
+		Model_PauseAnalyze::init($sessionid);
+		
+		echo json_encode(Service_Pattern::checkLastVideos($request, $session, $channelIds, $patternId, $sessionid, $lastVideoId));
+	}
 	
 	public function action_deletePattern()
 	{
@@ -184,6 +210,29 @@ class Controller_Welcome extends Controller {
 			echo true;
 		}
 		else 
+		{
+			echo $result;
+		}
+		
+	}
+	
+	public function action_authorizeMonitor()
+	{
+		$request = $this->request;
+		$session = Session::instance();
+		$apiServicre = new Service_YTApi('1067254332521-4o8abvtsaj2sihjbj82qfa17j1vg8l6r.apps.googleusercontent.com',
+				'oMbF7Zj1K9cCVXw3ZVGFN5z-');
+		$result = $apiServicre->authorize("authorizeMonitor", $request, $session);
+		if($result === 1)
+		{
+			header('Location: ' . 'http://' . $_SERVER['HTTP_HOST'] . "/monitor");
+			exit();
+		}
+		else if($result === 0)
+		{
+			echo true;
+		}
+		else
 		{
 			echo $result;
 		}

@@ -32,7 +32,7 @@ class Service_YTApi
         $this->client->setScopes('https://www.googleapis.com/auth/youtube');
 //          $redirect = filter_var('http://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'],
 //              FILTER_SANITIZE_URL);
-        $redirect = filter_var('http://' . $_SERVER['HTTP_HOST'] . "/authorize");
+        $redirect = filter_var('http://' . $_SERVER['HTTP_HOST'] . "/" . $path);
         $this->client->setRedirectUri($redirect);
         
         // Define an object that will be used to make all API requests.
@@ -146,5 +146,69 @@ class Service_YTApi
             $htmlBody = array('return_type' => 1, 'result' => $htmlBody);
         }
         return $htmlBody;
+    }
+    
+    public function getLastChannelsVideo($session, $channelId)
+    {
+    	//Check to ensure that the access token was successfully acquired.
+    	if ($this->client->getAccessToken()) {
+    		try {
+    			
+    			/*
+    			 * Before channel shelves will appear on your channel's web page, browse
+    			 * view needs to be enabled. If you know that your channel already has
+    			 * it enabled, or if you want to add a number of sections before enabling it,
+    			 * you can skip the call to enable_browse_view().
+    			 */
+    			
+    			// Call the YouTube Data API's channels.list method to retrieve your channel.
+    			//$listResponse = $youtube->channels->listChannels('brandingSettings', array('mine' => true));
+    			//$response = $youtube->channels->listChannels('invideoPromotion', array('id' => 'UC6zOnSAtJzz166Y5B7tImNA'));
+    			//$response = $youtube->videos->listVideos('contentDetails', array('id' => 'MHjrim3TdVE'));
+    			$videoIds = array();
+    			$pageToken = '';
+    			
+    			$response = $this->youtube->search->listSearch('snippet', array('maxResults' => 1,
+    					'channelId' => $channelId,
+    					'order' => 'date'
+    			));
+    			
+    			foreach($response->items as $item)
+    			{
+    				array_push($videoIds, $item->id->videoId);
+    			}
+    			
+    			
+    			
+    			//$response->items[0]->id->videoId
+    			
+    			//$subtitle = getSubtitleByVideId($videoId);
+    			//$subtitle = $subtitle;
+    			$htmlBody = array('return_type' => 0, 'result' => $videoIds);
+    			
+    		} catch (Google_Service_Exception $e) {
+    			$htmlBody = sprintf('<p>A service error occurred: <code>%s</code></p>',
+    					htmlspecialchars($e->getMessage()));
+    			$htmlBody = array('return_type' => 1, 'result' => $htmlBody);
+    		} catch (Google_Exception $e) {
+    			$htmlBody = sprintf('<p>An client error occurred: <code>%s</code></p>',
+    					htmlspecialchars($e->getMessage()));
+    			$htmlBody = array('return_type' => 1, 'result' => $htmlBody);
+    		}
+    		
+    		$session->set($this->tokenSessionKey, $this->client->getAccessToken());
+    	}
+    	if($htmlBody['return_type'] === 1)
+    	{
+    		// If the user hasn't authorized the app, initiate the OAuth flow
+    		$state = mt_rand();
+    		$this->client->setState($state);
+    		$session->set('state', $state);
+    		
+    		$authUrl = $this->client->createAuthUrl();
+    		$htmlBody = '<a id="authLink" href=' . $authUrl . '></a>';
+    		$htmlBody = array('return_type' => 1, 'result' => $htmlBody);
+    	}
+    	return $htmlBody;
     }
 }
