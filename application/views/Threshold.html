@@ -5,15 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="">
     <meta name="author" content="">
-    <link rel="icon" href="media/logo-2.png">
+    <link rel="icon" href="../../media/logo-2.png">
 
     <title>YouTube's monitor</title>
 
-    <link href="media/Cover Template for Bootstrap_files/bootstrap.min.css" rel="stylesheet">
+    <link href="../../media/Cover Template for Bootstrap_files/bootstrap.min.css" rel="stylesheet">
 
-    <link href="media/Cover Template for Bootstrap_files/cover.css" rel="stylesheet">
+    <link href="../../media/Cover Template for Bootstrap_files/cover.css" rel="stylesheet">
     
-    <link href="media/css/sizeclasses.css" rel="stylesheet">
+    <link href="../../media/css/sizeclasses.css" rel="stylesheet">
     
 
     <style>
@@ -72,18 +72,29 @@
             border-top-right-radius: calc(.3rem - 1px);
         }
         
+        .right-part{
+            padding-left: 0px;
+            border-left-width:1px;
+            border-left-style:solid;
+            border-left-color:rgba(0,0,0,.125);
+        }
         
+        .left-part{
+            padding-right: 0px;
+            border-right-width:1px;
+            border-right-style:solid;
+            border-right-color:rgba(0,0,0,.125);
+        }
         
         
     </style>
   </head>
 
   <body class="text-center" style="background-color:#294a70;">
-      <div id="sessionid" class="display-none"><?php echo $sessionid; ?></div>
       <div class="d-flex w-100 h-100 p-3 mx-auto flex-column">
           <header class="masthead mb-auto">
               <div class="inner">
-                  <h3 class="masthead-brand"><img src="media/logo-2.png" width="40" />  YTMonitor</h3>
+                  <h3 class="masthead-brand"><img src="../../media/logo-2.png" width="40" />  YTMonitor</h3>
                   <nav class="nav nav-masthead justify-content-center">
                       <a id="reload" class="nav-link active" href="test">Подготовка(генерация паттерна)</a>
                       <a class="nav-link" href="analyze">Анализ каналов</a>
@@ -91,7 +102,7 @@
                   </nav>
               </div>
           </header>
-          <div id="mainPanel" class="row w-50 mx-auto">
+          <div id="mainPanel" class="row">
               <div class="col">
                   <h2>Список паттернов</h2>
                   
@@ -110,14 +121,31 @@
                       </div>
                   </div>
               </div>
-              <div id="editPanel" class="col display-none">
+              <div id="editPanel" class="col">
                   <h2>Редактирование/добавление паттерна</h2>
                   <div class="card" style="color:#294a70;">
-                      <div class="card-header">
-                          <input id="patternNameInput" type="text" class="form-control" placeholder="Название паттерна" style="text-align: center">
+                      
+                      <div class="row">
+                          <div class="col left-part">
+                              <div class="card-header">usual
+                              </div>
+                          </div>
+                          <div class="col right-part">
+                              <div class="card-header">Destruct
+                              </div>
+                          </div>
                       </div>
-                      <div class="card-body">
-                          <textarea id="videoIdsInput" class="form-control" rows="5" placeholder="id видео через ','"></textarea>
+                      <div class="row">
+                          <div class="col left-part">
+                              <div class="card-body">
+                                  <textarea id="videoIdsInput" class="form-control" rows="5" placeholder="id видео через ','"></textarea>
+                              </div>
+                          </div>
+                          <div class="col right-part">
+                              <div class="card-body">
+                                  <textarea id="videoIdsInput" class="form-control" rows="5" placeholder="id видео через ','"></textarea>
+                              </div>
+                          </div>
                       </div>
                       <div class="card-footer">
                           <div class="row">
@@ -147,15 +175,15 @@
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
-    <script src="media/Cover Template for Bootstrap_files/jquery-3.3.1.slim.min.js.Без названия" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="../../media/Cover Template for Bootstrap_files/jquery-3.3.1.slim.min.js.Без названия" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
     <script>window.jQuery || document.write('<script src="../../../../assets/js/vendor/jquery-slim.min.js"><\/script>')</script>
-      <script src="media/Cover Template for Bootstrap_files/popper.min.js.Без названия"></script>
-      <script src="media/Cover Template for Bootstrap_files/bootstrap.min.js.Без названия"></script>
-      <script src="media/js/libs/jquery-3.2.1.js"></script>
-      <script src="media/js/popper.js"></script>
-      <script src="media/js/bootstrap.min.js"></script>
-      <script src="media/js/bootstrup-confirmation.js"></script>
-      <script src="media/js/prepare.js"></script>
+      <script src="../../media/Cover Template for Bootstrap_files/popper.min.js.Без названия"></script>
+      <script src="../../media/Cover Template for Bootstrap_files/bootstrap.min.js.Без названия"></script>
+      <script src="../../media/js/libs/jquery-3.2.1.js"></script>
+      <script src="../../media/js/popper.js"></script>
+      <script src="../../media/js/bootstrap.min.js"></script>
+      <script src="../../media/js/bootstrup-confirmation.js"></script>
+      <script src="../../media/js/prepare.js"></script>
   
 
 </body></html>

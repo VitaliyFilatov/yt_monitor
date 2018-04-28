@@ -20,6 +20,7 @@ var scrollResult = $("#scrollResult")[0];
 var continueBtn = $("#continueBtn")[0];
 var startAgainBtn = $("#startAgainBtn")[0];
 var editParametersBtn = $("#editParametersBtn")[0];
+var reload = $("#reload")[0];
 
 var idPatternActive="";
 
@@ -85,8 +86,6 @@ function initializeChannels()
         channelList.insertBefore(li, lastLi);
         $("#removeChannelBtn" + channels[i].id)[0].addEventListener("click",onRemoveChannelBtnClick);
     }
-    
-    var pattern = getCookie("pattern");
 }
 
 function onStartPage()
@@ -131,6 +130,11 @@ function onStartPage()
                             patternList.appendChild(li);
                             $("#id" + data[i].id)[0].addEventListener("click", onPatternClick);
                         }
+                        var pattern = getCookie("pattern");
+                        if(pattern != "")
+                        {
+                            $("#" + pattern)[0].click();
+                        }
                     }
                 });
             }
@@ -138,6 +142,56 @@ function onStartPage()
     });
 }
 
+function errorAnalyze(jqXHR, textStatus, errorThrown)
+{
+    console.log("error: " + errorThrown);
+    subAnalyze = false;
+    infoWork.classList.add("display-none");
+    infoDone.classList.remove("display-none");
+}
+
+function successAnalyze(data, textStatus, jqXHR)
+{
+    subAnalyze = false;
+    data = JSON.parse(data);
+    if (data.return_type == 1) {
+        authContainer.innerHTML = data.result;
+        $("#authLink")[0].click();
+    } 
+    else if (data.return_type == 0) {
+        console.log(data);
+        var return_type = data.return_type;
+        data = data.result;
+        if (data != null) {
+            for (var i = 0; i < data.length; i++) {
+                var videoId = data[i].videoid;
+                var similarity = data[i].sim;
+                if (similarity == -1) {
+                    similarity = "нет субтитров";
+                }
+                var li = document.createElement("li");
+                li.classList.add("list-group-item");
+                li.innerHTML = '<div class="row"><div class="col-sm-7">' + videoId +
+                    '</div><div class="col-sm-5">' + similarity + '</div>';
+                resultList.appendChild(li);
+                scrollResult.scrollTop = scrollResult.scrollHeight;
+                if (i == data.length - 1) {
+                    lastVideoId = videoId;
+                }
+            }
+        }
+    }
+    if (data.return_type == 3) {
+        pauseAnalyzeBtn.classList.add("display-none");
+        startAgainBtn.classList.remove("display-none");
+    }
+    if (data.return_type == 4) {
+        continueBtn.classList.remove("display-none");
+        pauseAnalyzeBtn.classList.add("display-none");
+    }
+    infoWork.classList.add("display-none");
+    infoDone.classList.remove("display-none");
+}
 
 function onStartAnalyzeBtnClick()
 {
@@ -192,53 +246,8 @@ function onStartAnalyzeBtnClick()
         data: {channelIds : channelIds,
                patternId : idPatternActive.substr(2),
                sessionid : sessionid},
-        error: function(jqXHR, textStatus, errorThrown )
-        {
-            console.log("error: " + errorThrown);
-            subAnalyze = false;
-            infoWork.classList.add("display-none");
-            infoDone.classList.remove("display-none");
-        },
-        success: function(data, textStatus, jqXHR )
-        {
-            subAnalyze = false;
-            data = JSON.parse(data);
-            if(data.return_type == 1)
-            {
-                authContainer.innerHTML = data.result;
-                $("#authLink")[0].click();
-            }
-            else
-            {
-                console.log(data);
-                data = data.result;
-                if(data != null)
-                {
-                    for(var i=0;i<data.length;i++)
-                    {
-                        var videoId = data[i].videoid;
-                        var similarity = data[i].sim
-                        if(similarity == -1)
-                        {
-                            similarity = "нет субтитров";
-                        }
-                        var li = document.createElement("li");
-                        li.classList.add("list-group-item");
-                        li.innerHTML = '<div class="row"><div class="col-sm-7">' + videoId + 
-                                '</div><div class="col-sm-5">' + similarity + '</div>'; 
-                        resultList.appendChild(li);
-                        scrollResult.scrollTop = scrollResult.scrollHeight
-                        if(i == data.length - 1)
-                        {
-                            lastVideoId = videoId;
-                        }
-                    }
-                }
-            }
-            
-            infoWork.classList.add("display-none");
-            infoDone.classList.remove("display-none");
-        }
+        error: errorAnalyze,
+        success: successAnalyze
     });
     
     getSubResultAnalyze();
@@ -313,8 +322,6 @@ function onStopAnalyzeBtnClick()
 
 function onPauseAnalyzeBtnClick()
 {
-    continueBtn.classList.remove("display-none");
-    pauseAnalyzeBtn.classList.add("display-none");
     var sessionid = getSessionId()
     $.ajax({
         url: "pauseAnalyze",
@@ -342,26 +349,8 @@ function onContinueBtnClick()
         url: "continueAnalyze",
         type: "POST",
         data: {sessionid : sessionid},
-        error: function(jqXHR, textStatus, errorThrown )
-        {
-            console.log("error: " + errorThrown);
-            subAnalyze = false;
-            infoWork.classList.add("display-none");
-            infoDone.classList.remove("display-none");
-        },
-        success: function(data, textStatus, jqXHR )
-        {
-            data = JSON.parse(data);
-            if(data.return_type == 1)
-            {
-                authContainer.innerHTML = data.result;
-                $("#authLink")[0].click();
-            }
-            subAnalyze = false;
-            infoWork.classList.add("display-none");
-            infoDone.classList.remove("display-none");
-            lastVideoId="";
-        }
+        error: errorAnalyze,
+        success: successAnalyze
     });
     
     getSubResultAnalyze();
@@ -448,11 +437,13 @@ function onPatternClick()
 {
     if(this.id == idPatternActive)
     {
+        setCookie("pattern", "", 1);
         idPatternActive="";
         this.classList.remove("active");
     }
     else
     {
+        setCookie("pattern", this.id, 1);
         this.classList.add("active");
         if(idPatternActive != "")
         {
@@ -497,3 +488,4 @@ editParametersBtn.addEventListener("click", onEditParametersBtnClick);
 pauseAnalyzeBtn.addEventListener("click", onPauseAnalyzeBtnClick);
 continueBtn.addEventListener("click", onContinueBtnClick);
 startAgainBtn.addEventListener("click", onStartAgainBtnClick);
+reload.addEventListener("click", onStopAnalyzeBtnClick);

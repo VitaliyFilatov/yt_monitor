@@ -25,24 +25,66 @@ var monitorStep=15000;
 
 var idPatternActive="";
 
-var lastVideoId;
+var lastVideoId = "";
 
 var subAnalyze;
 
 function getSessionId()
 {
-    var sessionid = document.cookie;
-    sessionid = sessionid.substr(sessionid.indexOf("session"));
-    sessionid = sessionid.substr(8);
-    if(sessionid.indexOf(";") >= 0)
-    {
-        sessionid = sessionid.substr(0, sessionid.indexOf(";")); 
+    return $("#sessionid")[0].innerHTML;
+}
+
+function setCookie(cname, cvalue, exdays) {
+    var d = new Date();
+    d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+    var expires = "expires="+d.toUTCString();
+    document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+}
+
+function getCookie(cname) {
+    var name = cname + "=";
+    var ca = document.cookie.split(';');
+    for(var i = 0; i < ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) == ' ') {
+            c = c.substring(1);
+        }
+        if (c.indexOf(name) == 0) {
+            return c.substring(name.length, c.length);
+        }
     }
-    return sessionid;
+    return "";
+}
+
+
+function initializeChannels()
+{
+    var channels = getCookie("channelsMonitor");
+    if(channels == "")
+    {
+        return;
+    }
+    channels = JSON.parse(channels);
+    
+    for(var i=0;i<channels.length;i++)
+    {
+        var li = document.createElement("li");
+        li.classList.add("list-group-item");
+        li.id = "idchannel" + channels[i].id;
+        li.innerHTML = '<div name="channelName" class="row"><div class="col-sm-5">'+channels[i].name+'</div>'+
+                       '<div name="channelId" class="col-sm-5">'+channels[i].id+'</div>'+
+                       '<div name="channelBtn" class="col-sm-2"><button id="removeChannelBtn'+channels[i].id+'" type="button" class="btn" style="background-color:transparent">'+
+                       '<img src="media/png/glyphicons-208-remove.png" width="20" /></button></div></div>';
+
+        var lastLi = channelList.children[channelList.children.length - 1];
+        channelList.insertBefore(li, lastLi);
+        $("#removeChannelBtn" + channels[i].id)[0].addEventListener("click",onRemoveChannelBtnClick);
+    }
 }
 
 function onStartPage()
 {
+    initializeChannels();
     var height = document.documentElement.clientHeight;
     scrollResult.style="height:" + Math.floor(height*0.43) + "px;";
     $.ajax({
@@ -81,6 +123,12 @@ function onStartPage()
                             li.innerHTML = data[i].name;
                             patternList.appendChild(li);
                             $("#id" + data[i].id)[0].addEventListener("click", onPatternClick);
+                        }
+                        
+                        var pattern = getCookie("patternMonitor");
+                        if(pattern != "")
+                        {
+                            $("#" + pattern)[0].click();
                         }
                     }
                 });
@@ -124,19 +172,23 @@ function monitorChannels(channelIds, patternId, sessionId, lastVideoId)
                     {
                         var videoId = data[i].videoid;
                         var similarity = data[i].sim
-                        if(similarity == -1)
+                        if($("#id" + videoId)[0] == undefined)
                         {
-                            similarity = "нет субтитров";
-                        }
-                        var li = document.createElement("li");
-                        li.classList.add("list-group-item");
-                        li.innerHTML = '<div class="row"><div class="col-sm-7">' + videoId + 
-                                '</div><div class="col-sm-5">' + similarity + '</div>'; 
-                        resultList.appendChild(li);
-                        scrollResult.scrollTop = scrollResult.scrollHeight
-                        if(i == data.length - 1)
-                        {
-                            lastVideoId = videoId;
+                            if(similarity == -1)
+                            {
+                                similarity = "нет субтитров";
+                            }
+                            var li = document.createElement("li");
+                            li.classList.add("list-group-item");
+                            li.id = "id" + videoId;
+                            li.innerHTML = '<div class="row"><div class="col-sm-7">' + videoId + 
+                                    '</div><div class="col-sm-5">' + similarity + '</div>'; 
+                            resultList.appendChild(li);
+                            scrollResult.scrollTop = scrollResult.scrollHeight
+                            if(i == data.length - 1)
+                            {
+                                lastVideoId = videoId;
+                            } 
                         }
                     }
                 }
@@ -190,6 +242,8 @@ function onStartMonitorBtnClick()
     //hide and show needed info
     infoWork.classList.remove("display-none");
     infoDone.classList.add("display-none");
+    continueBtn.classList.add("display-none");
+    stopAnalyzeBtn.classList.remove("display-none");
     subAnalyze=true;
     var rows = channelList.children;
     var channelIds=[];
@@ -203,7 +257,7 @@ function onStartMonitorBtnClick()
     
     var sessionid = getSessionId();
     
-    var lastVideoId = "";
+    lastVideoId = "";
     
     monitorChannels(channelIds, idPatternActive.substr(2), sessionid, lastVideoId);
 }
@@ -231,16 +285,20 @@ function getSubResultAnalyze()
                 data = JSON.parse(data);
                 var videoId = data.videoid;
                 var similarity = data.sim
-                if(similarity == -1)
+                if($("#id" + videoId)[0] == undefined)
                 {
-                    similarity = "нет субтитров";
+                    if(similarity == -1)
+                    {
+                        similarity = "нет субтитров";
+                    }
+                    var li = document.createElement("li");
+                    li.classList.add("list-group-item");
+                    li.id = "id" + videoId;
+                    li.innerHTML = '<div class="row"><div class="col-sm-7">' + videoId + 
+                            '</div><div class="col-sm-5">' + similarity + '</div>'; 
+                    resultList.appendChild(li);
+                    scrollResult.scrollTop = scrollResult.scrollHeight
                 }
-                var li = document.createElement("li");
-                li.classList.add("list-group-item");
-                li.innerHTML = '<div class="row"><div class="col-sm-7">' + videoId + 
-                        '</div><div class="col-sm-5">' + similarity + '</div>'; 
-                resultList.appendChild(li);
-                scrollResult.scrollTop = scrollResult.scrollHeight
             }
             
             
@@ -268,8 +326,12 @@ function getSubResultAnalyze()
 
 function onStopAnalyzeBtnClick()
 {
-    pauseAnalyzeBtn.classList.add("display-none");
-    startAgainBtn.classList.remove("display-none");
+//    pauseAnalyzeBtn.classList.add("display-none");
+//    startAgainBtn.classList.remove("display-none");
+    continueBtn.classList.remove("display-none");
+    stopAnalyzeBtn.classList.add("display-none");
+    infoWork.classList.add("display-none");
+    infoDone.classList.remove("display-none");
     var sessionid = getSessionId()
     $.ajax({
         url: "stopAnalyze?XDEBUG_SESSION_START=ECLIPSE_DBGP",
@@ -307,38 +369,25 @@ function onPauseAnalyzeBtnClick()
 function onContinueBtnClick()
 {
     continueBtn.classList.add("display-none");
-    pauseAnalyzeBtn.classList.remove("display-none");
+    stopAnalyzeBtn.classList.remove("display-none");
     var sessionid = getSessionId();
     subAnalyze = true;
     infoWork.classList.remove("display-none");
     infoDone.classList.add("display-none");
-    $.ajax({
-        url: "continueAnalyze",
-        type: "POST",
-        data: {sessionid : sessionid},
-        error: function(jqXHR, textStatus, errorThrown )
+    subAnalyze=true;
+    var rows = channelList.children;
+    var channelIds=[];
+    for(var i=0; i < rows.length - 1; i++)
+    {
+        if(rows[i].id != "unusedChannel")
         {
-            console.log("error: " + errorThrown);
-            subAnalyze = false;
-            infoWork.classList.add("display-none");
-            infoDone.classList.remove("display-none");
-        },
-        success: function(data, textStatus, jqXHR )
-        {
-            data = JSON.parse(data);
-            if(data.return_type == 1)
-            {
-                authContainer.innerHTML = data.result;
-                $("#authLink")[0].click();
-            }
-            subAnalyze = false;
-            infoWork.classList.add("display-none");
-            infoDone.classList.remove("display-none");
-            lastVideoId="";
+            channelIds.push(rows[i].id.substr(9));
         }
-    });
+    }
     
-    getSubResultAnalyze();
+    var sessionid = getSessionId();
+    
+    monitorChannels(channelIds, idPatternActive.substr(2), sessionid, lastVideoId);
 }
 
 function onStartAgainBtnClick()
@@ -363,6 +412,11 @@ function onInsertChannelBtnClick()
     {
         return;
     }
+    if($("#removeChannelBtn" + idChannelInput.value)[0] !== undefined)
+    {
+        alert("Видео с таким id канала уже добавлено");
+        return;
+    }
     var li = document.createElement("li");
     li.classList.add("list-group-item");
     li.id = "idchannel" + idChannelInput.value;
@@ -374,6 +428,20 @@ function onInsertChannelBtnClick()
     var lastLi = channelList.children[channelList.children.length - 1];
     channelList.insertBefore(li, lastLi);
     $("#removeChannelBtn" + idChannelInput.value)[0].addEventListener("click",onRemoveChannelBtnClick);
+    
+    
+    var channels = getCookie("channelsMonitor");
+    if(channels != "")
+    {
+       channels = JSON.parse(channels); 
+    }
+    else
+    {
+        channels = [];
+    }
+    channels.push({id:idChannelInput.value, name : nameChannelInput.value});
+    channels = JSON.stringify(channels);
+    setCookie("channelsMonitor", channels, 1);
 }
 
 function onRemoveChannelBtnClick()
@@ -381,6 +449,23 @@ function onRemoveChannelBtnClick()
     var id = this.id;
     id = id.substr(16);
     $("#idchannel" + id)[0].remove();
+    
+    var channels = getCookie("channelsMonitor");
+    if(channels != "")
+    {
+        channels = JSON.parse(channels);
+        setCookie("channelsMonitor", channels, 1);
+        for(var i=0;i<channels.length;i++)
+        {
+            if(channels[i].id == id)
+            {
+                channels.splice(id, 1);
+                break;
+            }
+        }
+        channels = JSON.stringify(channels);
+        setCookie("channelsMonitor", channels, 1);
+    }
 }
 
 function onPatternClick()
@@ -392,6 +477,7 @@ function onPatternClick()
     }
     else
     {
+        setCookie("patternMonitor", this.id, 1);
         this.classList.add("active");
         if(idPatternActive != "")
         {

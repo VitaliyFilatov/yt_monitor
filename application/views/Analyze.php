@@ -69,7 +69,7 @@
                   <h3 class="masthead-brand"><img src="media/logo-2.png" width="40" />  YTMonitor</h3>
                   <nav class="nav nav-masthead justify-content-center">
                       <a class="nav-link" href="test">Подготовка(генерация паттерна)</a>
-                      <a class="nav-link active" href="analyze">Анализ каналов</a>
+                      <a id="reload" class="nav-link active" href="analyze">Анализ каналов</a>
                       <a class="nav-link" href="monitor">Мониторинг каналов</a>
                   </nav>
               </div>

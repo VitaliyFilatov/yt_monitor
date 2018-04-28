@@ -11,7 +11,11 @@ class Controller_Welcome extends Controller {
 
 	public function action_test()
 	{
-		$this->response->body(View::factory('Prepare'));
+		$date = new DateTime();
+		$data = array(
+				'sessionid' => Session::instance()->id() . $date->getTimestamp()
+		);
+		$this->response->body(View::factory('Prepare', $data));
 	}
 	
 	public function action_analyze()
@@ -25,7 +29,11 @@ class Controller_Welcome extends Controller {
 	
 	public function action_monitor()
 	{
-		$this->response->body(View::factory('Monitor'));
+		$date = new DateTime();
+		$data = array(
+				'sessionid' => Session::instance()->id() . $date->getTimestamp()
+		);
+		$this->response->body(View::factory('Monitor', $data));
 	}
 	
 	public function action_createPattern()
@@ -122,7 +130,7 @@ class Controller_Welcome extends Controller {
 			echo json_encode($result);
 			return;
 		}
-		echo json_encode(array('return_type' => 0, 'result' => "true"));
+		echo json_encode(array('return_type' => 0, 'result' => Model_Result::popAllResults($sessionid)));
 	}
 	
 	public function action_stopAnalyze()

@@ -58,4 +58,13 @@ class Model_SaveResult extends Model_Base
 		
 		return $result;
 	}
+	
+	public static function deleteByPattern($patternid)
+	{
+		$sql = "DELETE FROM `yt_monitor`.`saveresult`
+				WHERE `patternid`=:patternid";
+		$query = DB::query(Database::DELETE, $sql);
+		$query->param(':patternid', $patternid);
+		$query->execute();
+	}
 }

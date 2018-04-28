@@ -73,6 +73,20 @@
         }
         
         
+        .right-part{
+            padding-left: 0px;
+            border-left-width:1px;
+            border-left-style:solid;
+            border-left-color:rgba(0,0,0,.125);
+        }
+        
+        .left-part{
+            padding-right: 0px;
+            border-right-width:1px;
+            border-right-style:solid;
+            border-right-color:rgba(0,0,0,.125);
+        }
+        
         
         
     </style>
@@ -92,9 +106,8 @@
               </div>
           </header>
           <div id="mainPanel" class="row w-50 mx-auto">
-              <div class="col">
+              <div id="patternPanel" class="col">
                   <h2>Список паттернов</h2>
-                  
                   <div class="card" style="color:#294a70;">
                       <div class="card-body">
                           <div class="pre-scrollable">
@@ -105,19 +118,33 @@
                               </div>
                           </div>
                       </div>
-                      <div class="card-footer">
-                          <button id="addPatternBtn" type="button" class="btn btn-outline-primary btn-outline-darkblue btn-block">Добавить паттерн</button>
-                      </div>
                   </div>
               </div>
               <div id="editPanel" class="col display-none">
                   <h2>Редактирование/добавление паттерна</h2>
                   <div class="card" style="color:#294a70;">
-                      <div class="card-header">
-                          <input id="patternNameInput" type="text" class="form-control" placeholder="Название паттерна" style="text-align: center">
+                      
+                      <div class="row">
+                          <div class="col left-part">
+                              <div class="card-header">Деструктивный котнтент
+                              </div>
+                          </div>
+                          <div class="col right-part">
+                              <div class="card-header">Недеструктивный контент
+                              </div>
+                          </div>
                       </div>
-                      <div class="card-body">
-                          <textarea id="videoIdsInput" class="form-control" rows="5" placeholder="id видео через ','"></textarea>
+                      <div class="row">
+                          <div class="col left-part">
+                              <div class="card-body">
+                                  <textarea id="destrVideoIdsInput" class="form-control" rows="5" placeholder="id видео через ','"></textarea>
+                              </div>
+                          </div>
+                          <div class="col right-part">
+                              <div class="card-body">
+                                  <textarea id="nondestrVideoIdsInput" class="form-control" rows="5" placeholder="id видео через ','"></textarea>
+                              </div>
+                          </div>
                       </div>
                       <div class="card-footer">
                           <div class="row">

@@ -14,6 +14,8 @@ var editedPattern = -1;
 
 var subResult=false;
 
+var inProcess = false;
+
 function searchPatternById(id)
 {
     for(var i = 0; i < patterns.length; i++)
@@ -51,19 +53,73 @@ function onAddPatternBtnClick()
 
 function onCancelBtnClick()
 {
-    mainPanel.classList.add("w-50");
-    mainPanel.classList.add("mx-auto");
-    editPanel.classList.add("display-none");
-    saveProgress.parentElement.classList.add("display-none");
+    if(inProcess)
+    {
+        return;
+    }
+    else
+    {
+        mainPanel.classList.add("w-50");
+        mainPanel.classList.add("mx-auto");
+        editPanel.classList.add("display-none");
+        saveProgress.parentElement.classList.add("display-none"); 
+    }
+}
+
+function cancelSave()
+{
+    if(inProcess)
+    {
+        $("#reload")[0].click();
+    }
+    else
+    {
+        mainPanel.classList.add("w-50");
+        mainPanel.classList.add("mx-auto");
+        editPanel.classList.add("display-none");
+        saveProgress.parentElement.classList.add("display-none"); 
+    }
+}
+
+function disableSaveBtn()
+{
+    saveBtn.classList.remove("btn-outline-primary");
+    saveBtn.classList.remove("btn-outline-darkblue");
+    saveBtn.classList.add("btn-darkblue");
+    saveBtn.classList.add("disabled");
+}
+
+function enableSaveBtn()
+{
+    saveBtn.classList.add("btn-outline-primary");
+    saveBtn.classList.add("btn-outline-darkblue");
+    saveBtn.classList.remove("btn-darkblue");
+    saveBtn.classList.remove("disabled");
+}
+
+function setConfirmation()
+{
+    //cancelBtn.setAttribute("data-toggle","confirmation");
+    //$('#cancelBtn').confirmation('show');
+}
+
+function unsetConfirmation()
+{
+//    $('[data-toggle=confirmation]').confirmation({
+//        rootSelector: '[data-toggle=]',
+//    });
 }
 
 function onSaveBtnClick()
 {
-    var sessionid = document.cookie.substr(8);
-    if(sessionid.indexOf(";") >= 0)
+    if(inProcess)
     {
-        sessionid = sessionid.substr(0, sessionid.indexOf(";")); 
+        return;
     }
+    disableSaveBtn();
+    setConfirmation();
+    inProcess = true;
+    var sessionid = $("#sessionid")[0].innerHTML;
     clearProgress();
     saveProgress.parentElement.classList.remove("display-none");
     subResult = true;
@@ -80,9 +136,13 @@ function onSaveBtnClick()
             oldValue = 0;
             saveProgress.parentElement.classList.add("display-none");
             editedPattern = -1;
+            inProcess = false;
+            enableSaveBtn();
+            unsetConfirmation();
         },
         success: function(data, textStatus, jqXHR )
         {
+            inProcess = false;
             subResult = false;
             oldValue = 0;
             saveProgress.parentElement.classList.add("display-none");
@@ -90,6 +150,8 @@ function onSaveBtnClick()
             if(data.type === 0)
             {
                 alert("Субтитры для видео с id=" + data.result + "отсутствуют");
+                enableSaveBtn();
+                unsetConfirmation();
                 return;
             }
             data = data.result;
@@ -104,12 +166,18 @@ function onSaveBtnClick()
             if(editedPattern != -1)
             {
                 var el = $("#id" + editedPattern.id)[0];
-                el.remove();
+                if(el !== undefined)
+                {
+                    el.remove();
+                }
             }
             patternList.appendChild(li);
             $("#editPatternBtn" + data.id)[0].addEventListener("click",onEditPatternBtnClick);
             $("#removePatternBtn" + data.id)[0].addEventListener("click",onDeletePatternBtnClick);
             patterns.push(data);
+            editedPattern = data;
+            enableSaveBtn();
+            unsetConfirmation();
         }
     });
     
@@ -118,11 +186,7 @@ function onSaveBtnClick()
 
 function getSubResultSavePattern()
 {
-    var sessionid = document.cookie.substr(8);
-    if(sessionid.indexOf(";") >= 0)
-    {
-        sessionid = sessionid.substr(0, sessionid.indexOf(";")); 
-    }
+    var sessionid = $("#sessionid")[0].innerHTML;
     $.ajax({
         url: "getSubResult?XDEBUG_SESSION_START=ECLIPSE_DBGP",
         type: "POST",
@@ -210,6 +274,10 @@ function onDeletePatternBtnClick()
 
 function onStartPage()
 {
+    $('[data-toggle=confirmation]').confirmation({
+        rootSelector: '[data-toggle=confirmation]',
+    });
+    unsetConfirmation();
     $.ajax({
         url: "getAllPatterns?XDEBUG_SESSION_START=ECLIPSE_DBGP",
         type: "GET",
@@ -239,9 +307,19 @@ function onStartPage()
     });
 }
 
+function hideConfirm()
+{
+    if(!inProcess)
+    {
+        $('#cancelBtn').confirmation('hide');
+    }
+}
+
 
 addPatternBtn.addEventListener("click", onAddPatternBtnClick);
 cancelBtn.addEventListener("click", onCancelBtnClick);
+$('#cancelBtn').on('canceled.bs.confirmation', cancelSave);
+$('#cancelBtn').on('shown.bs.confirmation', hideConfirm);
 saveBtn.addEventListener("click", onSaveBtnClick);
 window.addEventListener("load", onStartPage);
 

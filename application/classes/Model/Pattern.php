@@ -38,6 +38,7 @@ class Model_Pattern extends Model_Base
 	    $words = new Model_PatternWords();
 	    $video->deleteByPatternId($id);
 	    $words->deleteByPatternId($id);
+	    Model_SaveResult::deleteByPattern($id);
 	    static::deleteById($id);
 	    
 	    return true;

@@ -62,6 +62,7 @@
   </head>
 
 <body class="text-center" style="background-color:#294a70;">
+    <div id="sessionid" class="display-none"><?php echo $sessionid; ?></div>
       <div class="d-flex w-100 h-100 p-3 mx-auto flex-column">
           <header class="masthead" style="margin-bottom:5%">
               <div class="inner">
@@ -136,7 +137,8 @@
               </div>
               
               <div id="resultPanel" class="col-sm-7 display-none">
-                  <h2>Результаты анализа</h2>
+                  <h3 id="infoWork" class="display-none">Результаты мониторинга: производится мониторинг</h3>
+                  <h3 id="infoDone" class="display-none">Результаты мониторинга: мониторинг приостановлен</h3>
                   <div class="card" style="color:#294a70;">
                       <div class="card-header">
                           <h3 id="infoWork" class="display-none">производится мониторинг</h3>
@@ -152,7 +154,7 @@
                       </div>
                       <div class="card-footer">
                           <button id="stopAnalyzeBtn" type="button" class="btn btn-outline-primary btn-outline-darkblue btn-block">Остановить мониторинг</button>
-                          <button id="continueBtn" type="button" class="btn btn-outline-primary btn-outline-darkblue btn-block display-none">Продолжить мониторинг</button>
+                          <button id="continueBtn" type="button" class="btn btn-outline-primary btn-outline-darkblue btn-block display-none" style="margin-top:0px;">Продолжить мониторинг</button>
                       </div>
                   </div>
               </div>

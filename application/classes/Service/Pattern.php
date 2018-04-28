@@ -384,13 +384,13 @@ class Service_Pattern
     	{
     		if(Model_StopAnalyze::isStop($sessionid))
     		{
-    			return array('return_type' => 0, 'result' => "true");
+    			return array('return_type' => 3, 'result' => "true");
     		}
     		if(Model_PauseAnalyze::isPause($sessionid))
     		{
     			$sliced = array_slice($videoIds, $key);
     			Model_SaveResult::addResult($sessionid, $sliced, $patternId);
-    			return array('return_type' => 0, 'result' => "true");
+    			return array('return_type' => 4, 'result' => "true");
     		}
     		if($videoId == null)
     		{
