@@ -19,7 +19,6 @@ var editParametersBtn = $("#editParametersBtn")[0];
 
 var monitorStep=15000;
 
-var idPatternActive="";
 
 var lastVideoId = "";
 
@@ -358,25 +357,6 @@ function onRemoveChannelBtnClick()
         }
         channels = JSON.stringify(channels);
         setCookie("channelsMonitor", channels, 1);
-    }
-}
-
-function onPatternClick()
-{
-    if(this.id == idPatternActive)
-    {
-        idPatternActive="";
-        this.classList.remove("active");
-    }
-    else
-    {
-        setCookie("patternMonitor", this.id, 1);
-        this.classList.add("active");
-        if(idPatternActive != "")
-        {
-            $("#" + idPatternActive)[0].classList.remove("active");
-        }
-        idPatternActive = this.id; 
     }
 }
 

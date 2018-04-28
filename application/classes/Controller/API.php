@@ -213,5 +213,29 @@ class Controller_API extends Controller {
 	{
 		Service_Pattern::getPatternById(13);
 	}
+	
+	public function action_calcThreshold()
+	{
+		$body = $this->request->post();
+		$patternName = $body['patternId'];
+		$destrVideoIds = $body['destrVideoIds'];
+		$nondestrVideoIds = $body['nondestrVideoIds'];
+		$destrVideoIds = explode(",",$destrVideoIds);
+		$nondestrVideoIds = explode(",",$nondestrVideoIds);
+		$servicePattern = new Service_Pattern();
+		$sessionid = $body['sessionid'];
+		Model_CreateResult::init($sessionid);
+		try
+		{
+			$pattern = $servicePattern->createPattern($patternName, $videoIds, $sessionid);
+			Model_CreateResult::init($sessionid);
+			echo json_encode($pattern);
+		}
+		catch(Exception $e)
+		{
+			Model_CreateResult::init($sessionid);
+			echo json_encode(array('type'=>0, 'result'=>false));
+		}
+	}
 
 } // End API

@@ -343,6 +343,82 @@ class Service_Pattern
         return array('type'=>1, 'result'=>$patternEntity);
     }
     
+    public static function simByVideoId($videoId, $sims)
+    {
+    	foreach($sims as $key=>$value)
+    	{
+    		if($key == $videoId)
+    		{
+    			return $value;
+    		}
+    	}
+    	return -1;
+    }
+    
+    public static function countLessThen($videoIds, $sims, $value)
+    {
+    	$count = 0;
+    	foreach($videoIds as $videoId)
+    	{
+    		$sim = Service_Pattern::simByVideoId($videoId, $sims);
+    		if($sim != -1)
+    		{
+    			if($sim < $value)
+    			{
+    				$count++;
+    			}
+    		}
+    	}
+    	return $count;
+    }
+    
+    public static function countMoreThenOrEqual($videoIds, $sims, $value)
+    {
+    	$count = 0;
+    	foreach($videoIds as $videoId)
+    	{
+    		$sim = Service_Pattern::simByVideoId($videoId, $sims);
+    		if($sim != -1)
+    		{
+    			if($sim >= $value)
+    			{
+    				$count++;
+    			}
+    		}
+    	}
+    	return $count;
+    }
+    
+    public function calcThreshold($patternid, $destrVideoIds, $nondestrVideoIds, $sessionid)
+    {
+    	$videoIds = array_merge($destrVideoIds, $nondestrVideoIds);
+    	$sims = Service_Pattern::analizeVideosForThreshold($videoIds, $patternid, $sessionid);
+    	$values = array();
+    	foreach($sims as $sim)
+    	{
+    		array_push($values, $sim['sim']);
+    	}
+    	rsort($values);
+    	$errors = count($videoIds);
+    	$threshold = 1;
+    	foreach($values as $value)
+    	{
+    		$current = 0;
+    		$current += Service_Pattern::countLessThen($destrVideoIds, $sims, $value);
+    		$current += Service_Pattern::countMoreThenOrEqual($nondestrVideoIds, $sims, $value);
+    		if($current > $errors)
+    		{
+    			return $threshold;
+    		}
+    		else
+    		{
+    			$errors = $current;
+    			$threshold = $value;
+    		}
+    	}
+    	return -1;
+    }
+    
     public static function deletePatternByName($name)
     {
         Model_Pattern::deleteByName($name);
@@ -366,8 +442,6 @@ class Service_Pattern
         	$resCA = Service_Pattern::getStatistics(array(Service_Pattern::parseContentAnalize(Service_Pattern::getContentAnaliz($subtitle))));
         	return Service_Pattern::getSimilarityWithPattern($pattern, $resCA);
         }
-        
-        
     }
     
     public static function getPatternById($id)
@@ -404,6 +478,39 @@ class Service_Pattern
     		Model_Result::addResult($sessionid, $videoId, $sim);
     	}
     	return array('return_type' => 0, 'result' => "true");
+    }
+    
+    public static function analizeVideosForThreshold($videoIds, $patternId, $sessionid)
+    {
+    	$sims = array();
+    	foreach ($videoIds as $key=>$videoId)
+    	{
+    		if(Model_StopAnalyze::isStop($sessionid))
+    		{
+    			return array('return_type' => 3, 'result' => "true");
+    		}
+    		if(Model_PauseAnalyze::isPause($sessionid))
+    		{
+    			$sliced = array_slice($videoIds, $key);
+    			Model_SaveResult::addResult($sessionid, $sliced, $patternId);
+    			return array('return_type' => 4, 'result' => "true");
+    		}
+    		if($videoId == null)
+    		{
+    			continue;
+    		}
+    		$sim = Service_Pattern::analizeVideo($videoId, new Pattern($patternId));
+    		if($sim == "nosub")
+    		{
+    			$sim = -1;
+    		}
+    		else 
+    		{
+    			array_push($sims, array('videoId'=>$videoId,'sim' => $sim));
+    		}
+    		Model_CreateResult::addResult($sessionid, round($key/count($videoIds)*100));
+    	}
+    	return array('return_type' => 0, 'result' => $sims);
     }
     
     public static function analizeMonitorVideos($videoIds, $patternId, $sessionid)

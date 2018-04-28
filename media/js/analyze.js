@@ -19,7 +19,6 @@ var startAgainBtn = $("#startAgainBtn")[0];
 var editParametersBtn = $("#editParametersBtn")[0];
 var reload = $("#reload")[0];
 
-var idPatternActive="";
 
 var lastVideoId;
 
@@ -318,26 +317,6 @@ function onRemoveChannelBtnClick()
         }
         channels = JSON.stringify(channels);
         setCookie("channels", channels, 1);
-    }
-}
-
-function onPatternClick()
-{
-    if(this.id == idPatternActive)
-    {
-        setCookie("pattern", "", 1);
-        idPatternActive="";
-        this.classList.remove("active");
-    }
-    else
-    {
-        setCookie("pattern", this.id, 1);
-        this.classList.add("active");
-        if(idPatternActive != "")
-        {
-            $("#" + idPatternActive)[0].classList.remove("active");
-        }
-        idPatternActive = this.id; 
     }
 }
 

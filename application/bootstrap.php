@@ -196,6 +196,12 @@ Route::set('analyze', '(analyze(/<id>))')
 			'controller' => 'welcome',
 			'action'     => 'analyze',
 	));
+	
+Route::set('threshold', '(threshold(/<id>))')
+	->defaults(array(
+			'controller' => 'welcome',
+			'action'     => 'threshold',
+	));
 
 Route::set('authorize', '(authorize(/<id>))')
 	->defaults(array(

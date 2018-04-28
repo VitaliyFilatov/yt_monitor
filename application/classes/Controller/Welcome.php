@@ -16,7 +16,12 @@ class Controller_Welcome extends Controller_Template {
 			2 => array('id'=>'',
 					'active' => '',
 					'href'=>'monitor',
-					'text'=>'Мониторинг каналов'));
+					'text'=>'Мониторинг каналов'),
+			3 => array('id'=>'',
+					'active' => '',
+					'href'=>'threshold',
+					'text'=>'Пороговые зачения')
+			);
 
 	public function action_index()
 	{
@@ -69,6 +74,25 @@ class Controller_Welcome extends Controller_Template {
 				"media/js/pattern-panel.js",
 				"media/js/channel-panel.js",
 				"media/js/monitor.js");
+	}
+	
+	
+	public function action_threshold()
+	{
+		$date = new DateTime();
+		$data = Session::instance()->id() . $date->getTimestamp();
+		$patternPanel = View::factory('PatternPanel');
+		$content = View::factory('Threshold');
+		$content->patternPanel = $patternPanel;
+		$this->links[3]['id'] = 'reload';
+		$this->links[3]['active'] = 'active';
+		$this->template->sessionid = $data;
+		$this->template->links = $this->links;
+		$this->template->content = $content;
+		$this->template->scripts = array("media/js/cookie-manager.js",
+				"media/js/pattern-panel.js",
+				"media/js/threshold.js"
+		);
 	}
 
 } // End Welcome
