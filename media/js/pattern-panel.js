@@ -1,7 +1,7 @@
 var patternPanel = $("#patternPanel")[0];
+var patternList = $("#patternList")[0];
 
-function getAllPatterns()
-{
+function getAllPatterns() {
     $.ajax({
         url: "getAllPatterns",
         type: "GET",
@@ -10,7 +10,6 @@ function getAllPatterns()
         },
         success: function (data, textStatus, jqXHR) {
             data = JSON.parse(data);
-            patterns = data;
             //console.log("success: " + data.patternName);
             for (var i = 0; i < data.length; i++) {
                 var li = document.createElement("li");
@@ -22,7 +21,9 @@ function getAllPatterns()
             }
             var pattern = getCookie("pattern");
             if (pattern != "") {
-                $("#" + pattern)[0].click();
+                if ($("#" + pattern)[0] !== undefined) {
+                    $("#" + pattern)[0].click();
+                }
             }
         }
     });

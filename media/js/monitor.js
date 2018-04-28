@@ -1,6 +1,4 @@
-var patternList = $("#patternList")[0];
 var startMonitorBtn = $("#startMonitorBtn")[0];
-var patternPanel = $("#patternPanel")[0];
 var resultPanel = $("#resultPanel")[0];
 var channelPanel = $("#channelPanel")[0];
 var addChanelBtn = $("#addChanelBtn")[0];
@@ -12,10 +10,8 @@ var stopAnalyzeBtn = $("#stopAnalyzeBtn")[0];
 var pauseAnalyzeBtn = $("#pauseAnalyzeBtn")[0];
 var authLink = $("#authLink")[0];
 var resultList = $("#resultList")[0];
-var authContainer = $("#authContainer")[0];
 var infoWork = $("#infoWork")[0];
 var infoDone = $("#infoDone")[0];
-var channelList = $("#channelList")[0];
 var scrollResult = $("#scrollResult")[0];
 var continueBtn = $("#continueBtn")[0];
 var startAgainBtn = $("#startAgainBtn")[0];
@@ -32,109 +28,6 @@ var subAnalyze;
 function getSessionId()
 {
     return $("#sessionid")[0].innerHTML;
-}
-
-function setCookie(cname, cvalue, exdays) {
-    var d = new Date();
-    d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
-    var expires = "expires="+d.toUTCString();
-    document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
-}
-
-function getCookie(cname) {
-    var name = cname + "=";
-    var ca = document.cookie.split(';');
-    for(var i = 0; i < ca.length; i++) {
-        var c = ca[i];
-        while (c.charAt(0) == ' ') {
-            c = c.substring(1);
-        }
-        if (c.indexOf(name) == 0) {
-            return c.substring(name.length, c.length);
-        }
-    }
-    return "";
-}
-
-
-function initializeChannels()
-{
-    var channels = getCookie("channelsMonitor");
-    if(channels == "")
-    {
-        return;
-    }
-    channels = JSON.parse(channels);
-    
-    for(var i=0;i<channels.length;i++)
-    {
-        var li = document.createElement("li");
-        li.classList.add("list-group-item");
-        li.id = "idchannel" + channels[i].id;
-        li.innerHTML = '<div name="channelName" class="row"><div class="col-sm-5">'+channels[i].name+'</div>'+
-                       '<div name="channelId" class="col-sm-5">'+channels[i].id+'</div>'+
-                       '<div name="channelBtn" class="col-sm-2"><button id="removeChannelBtn'+channels[i].id+'" type="button" class="btn" style="background-color:transparent">'+
-                       '<img src="media/png/glyphicons-208-remove.png" width="20" /></button></div></div>';
-
-        var lastLi = channelList.children[channelList.children.length - 1];
-        channelList.insertBefore(li, lastLi);
-        $("#removeChannelBtn" + channels[i].id)[0].addEventListener("click",onRemoveChannelBtnClick);
-    }
-}
-
-function onStartPage()
-{
-    initializeChannels();
-    var height = document.documentElement.clientHeight;
-    scrollResult.style="height:" + Math.floor(height*0.43) + "px;";
-    $.ajax({
-        url: "authorize",
-        type: "GET",
-        error: function(jqXHR, textStatus, errorThrown )
-        {
-            console.log("error: " + errorThrown);
-        },
-        success: function(data, textStatus, jqXHR )
-        {
-            if(data != true)
-            {
-                authContainer.innerHTML = data;
-                $("#authLink")[0].click();
-            }
-            else
-            {
-                $.ajax({
-                    url: "getAllPatterns",
-                    type: "GET",
-                    error: function(jqXHR, textStatus, errorThrown )
-                    {
-                        console.log("error: " + errorThrown);
-                    },
-                    success: function(data, textStatus, jqXHR )
-                    {
-                        data = JSON.parse(data);
-                        patterns = data;
-                        //console.log("success: " + data.patternName);
-                        for(var i = 0; i < data.length; i++)
-                        {
-                            var li = document.createElement("li");
-                            li.classList.add("list-group-item");
-                            li.id = "id" + data[i].id;
-                            li.innerHTML = data[i].name;
-                            patternList.appendChild(li);
-                            $("#id" + data[i].id)[0].addEventListener("click", onPatternClick);
-                        }
-                        
-                        var pattern = getCookie("patternMonitor");
-                        if(pattern != "")
-                        {
-                            $("#" + pattern)[0].click();
-                        }
-                    }
-                });
-            }
-        }
-    });
 }
 
 
