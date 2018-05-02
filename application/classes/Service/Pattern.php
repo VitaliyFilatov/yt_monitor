@@ -345,11 +345,11 @@ class Service_Pattern
     
     public static function simByVideoId($videoId, $sims)
     {
-    	foreach($sims as $key=>$value)
+    	foreach($sims as $sim)
     	{
-    		if($key == $videoId)
+    		if($sim['videoId'] == $videoId)
     		{
-    			return $value;
+    			return $sim['sim'];
     		}
     	}
     	return -1;
@@ -393,6 +393,7 @@ class Service_Pattern
     {
     	$videoIds = array_merge($destrVideoIds, $nondestrVideoIds);
     	$sims = Service_Pattern::analizeVideosForThreshold($videoIds, $patternid, $sessionid);
+    	$sims = $sims['result'];
     	$values = array();
     	foreach($sims as $sim)
     	{
@@ -408,6 +409,7 @@ class Service_Pattern
     		$current += Service_Pattern::countMoreThenOrEqual($nondestrVideoIds, $sims, $value);
     		if($current > $errors)
     		{
+    			Model_Pattern::setThreshold($patternid, $threshold);
     			return $threshold;
     		}
     		else
@@ -485,16 +487,6 @@ class Service_Pattern
     	$sims = array();
     	foreach ($videoIds as $key=>$videoId)
     	{
-    		if(Model_StopAnalyze::isStop($sessionid))
-    		{
-    			return array('return_type' => 3, 'result' => "true");
-    		}
-    		if(Model_PauseAnalyze::isPause($sessionid))
-    		{
-    			$sliced = array_slice($videoIds, $key);
-    			Model_SaveResult::addResult($sessionid, $sliced, $patternId);
-    			return array('return_type' => 4, 'result' => "true");
-    		}
     		if($videoId == null)
     		{
     			continue;
@@ -508,7 +500,7 @@ class Service_Pattern
     		{
     			array_push($sims, array('videoId'=>$videoId,'sim' => $sim));
     		}
-    		Model_CreateResult::addResult($sessionid, round($key/count($videoIds)*100));
+    		Model_CreateResult::addResult($sessionid, round(($key + 1)/count($videoIds)*100));
     	}
     	return array('return_type' => 0, 'result' => $sims);
     }
@@ -601,6 +593,104 @@ class Service_Pattern
     	{
     		return array('return_type' => 2, 'result' => $e->getMessage());
     	}
+    }
+    
+    
+    protected static function getContentAnalyzeAdvego($text, $strdelimeter='\n', $itemdelimeter=' ')
+    {
+    	$ch = curl_init();
+    	
+    	curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+    	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+    	
+    	curl_setopt($ch, CURLOPT_URL, 'https://advego.com/text/seo/');
+    	
+    	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    	curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+    			'Host: advego.com',
+    			'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:58.0) Gecko/20100101 Firefox/58.0',
+    			'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+    			'Accept-Language: ru-RU,ru;q=0.8,en-US;q=0.5,en;q=0.3',
+    			'Accept-Encoding: gzip, deflate, br',
+    			'Referer: https://advego.com/text/seo/',
+    			'Content-Type: application/x-www-form-urlencoded',
+    			'Cookie: _ym_uid=15220090741065601132; _ga=GA1.2.873281153.1522009074; _gid=GA1.2.1658885373.1525210101; join_role=000; asid=BWGfTQrSwU7p6MA4fT5vjhc69AtPVWeEyKLlirot4vXd8gYqp3LGMcNDIzwekwahgFbrFSbWF; _ym_visorc_32442815=w; _ym_isad=2; last_visit=1525199451705::1525210251705; _gat=1; tmr_detect=0%7C1525210254419',
+    			'Connection: keep-alive',
+    			'Upgrade-Insecure-Requests: 1',
+    			'Pragma: no-cache',
+    			'Cache-Control: no-cache'));
+    	curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query(array('id_lang' => 0,
+    			'job_text' => $text)));
+    	curl_setopt($ch, CURLOPT_POST, 1);
+    	
+    	
+    	
+    	
+    	$res = curl_exec($ch);
+    	if($res == false)
+    	{
+    		$err = curl_error($ch);
+    		$errno = curl_errno($ch);
+    	}
+    	curl_close($ch);
+    	$output = gzdecode($res);
+    	if($output === false)
+    	{
+    		return false;
+    	}
+    	$dom = new DOMDocument();
+    	libxml_use_internal_errors(true);
+    	$dom->loadHTML($output);
+    	libxml_use_internal_errors(false);
+    	$elements = $dom->getElementsByTagName('*');
+    	for($i=0;$i<$elements->length-1;$i++)
+    	{
+    		if(strcmp($elements->item($i)->textContent, utf8_encode("Слова")) == 0)
+    		{
+    			$div = $elements->item($i + 1);
+    			break;
+    		}
+    	}
+    	$rows = $div->getElementsByTagName('tr');
+    	$words = array();
+    	for($i=1;$i<$rows->length;$i++)
+    	{
+    		$tr = $rows->item($i);
+    		$tds = $tr->getElementsByTagName('td');
+    		$word = new Entity_BagWords();
+    		$word->word = utf8_decode($tds->item(0)->textContent);
+    		$word->freq = $tds->item(1)->textContent;
+    		array_push($words, $word);
+    	}
+    	return $words;
+    }
+    
+    public static function prepareBagOfWords()
+    {
+//     	$file = file(trim("C:\\Users\\user\\Downloads\\negative.txt"));
+//     	$text = implode(" ", $file);
+    	$words = Service_Pattern::getContentAnalyzeAdvego("Мерзко и противно стало смотреть и слушать ваш телеканал. Я понимаю, что у вас задание, и вам нужно опустить ниже плинтуса неугодных. Но унижая, вы даже уже не замечаете своих недостатков. Когда вы публикуете аудиозапись беглого олигарха, то не следует искажать его слова в приведённом параллельно тексте. Или на канале кризис с кадрами, и это всего лишь опечатки низкоквалифицированного персонала? Дабы облегчить ваш поиск: Х. озвучил В наши планы входит оказать поддержку порядка двадцати молодЫМ политическИМ лидерАМ....﻿");
+    	$denominator = Model_PositiveWord::getCountUniqWords()+
+    	Model_NegativeWord::getCountUniqWords()+
+    	Model_NegativeWord::getSumFreq();
+    	$sumneg = log10(0.5);
+    	foreach($words as $word)
+    	{
+    		$sumneg += $word->freq * log10((Model_NegativeWord::getFreqByWord($word->word) + 1)/$denominator);
+    	}
+    	$denominator = Model_PositiveWord::getCountUniqWords()+
+    	Model_NegativeWord::getCountUniqWords()+
+    	Model_PositiveWord::getSumFreq();
+    	$sumpos = log10(0.5);
+    	foreach($words as $word)
+    	{
+    		$sumpos += $word->freq * log10((Model_PositiveWord::getFreqByWord($word->word) + 1)/$denominator);
+    	}
+    	if($sumpos > $sumneg)
+    	{
+    		return "позитивная тональность";
+    	}
+    	return "негативная тональность";
     }
     
 }

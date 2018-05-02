@@ -17,6 +17,8 @@
     
     <link href="media/css/custom-styles.css" rel="stylesheet">
     
+    <link href="media/fontawesome-free/web-fonts-with-css/css/fontawesome-all.css" rel="stylesheet">
+    
     <style>
         .btn-outline-darkblue{
             color: #294a70;

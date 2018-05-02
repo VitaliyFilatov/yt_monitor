@@ -70,16 +70,15 @@ function onSaveBtnClick()
         return;
     }
     disableSaveBtn();
-    setConfirmation();
     inProcess = true;
     var sessionid = $("#sessionid")[0].innerHTML;
     clearProgress();
     saveProgress.parentElement.classList.remove("display-none");
     subResult = true;
     $.ajax({
-        url: "createPattern?XDEBUG_SESSION_START=ECLIPSE_DBGP",
+        url: "calcThreshold?XDEBUG_SESSION_START=ECLIPSE_DBGP",
         type: "POST",
-        data: {patternId : idPatternActive,
+        data: {patternId : idPatternActive.substr(2),
                destrVideoIds : destrVideoIdsInput.value,
                nondestrVideoIds : nondestrVideoIdsInput.value,
                sessionid : sessionid},
@@ -109,6 +108,8 @@ function onSaveBtnClick()
             data = data.result;
             console.log("data: " + data);
             enableSaveBtn();
+            idPatternActive="";
+            getAllPatterns();
         }
     });
     
@@ -167,7 +168,6 @@ function onStartPage()
 }
 
 
-addPatternBtn.addEventListener("click", onAddPatternBtnClick);
 cancelBtn.addEventListener("click", onCancelBtnClick);
 $('#cancelBtn').on('canceled.bs.confirmation', cancelSave);
 $('#cancelBtn').on('shown.bs.confirmation', hideConfirm);

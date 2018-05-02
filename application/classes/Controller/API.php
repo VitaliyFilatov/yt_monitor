@@ -217,7 +217,7 @@ class Controller_API extends Controller {
 	public function action_calcThreshold()
 	{
 		$body = $this->request->post();
-		$patternName = $body['patternId'];
+		$patternId= $body['patternId'];
 		$destrVideoIds = $body['destrVideoIds'];
 		$nondestrVideoIds = $body['nondestrVideoIds'];
 		$destrVideoIds = explode(",",$destrVideoIds);
@@ -227,15 +227,20 @@ class Controller_API extends Controller {
 		Model_CreateResult::init($sessionid);
 		try
 		{
-			$pattern = $servicePattern->createPattern($patternName, $videoIds, $sessionid);
+			$threshold = $servicePattern->calcThreshold($patternId, $destrVideoIds, $nondestrVideoIds, $sessionid);
 			Model_CreateResult::init($sessionid);
-			echo json_encode($pattern);
+			echo json_encode($threshold);
 		}
 		catch(Exception $e)
 		{
 			Model_CreateResult::init($sessionid);
-			echo json_encode(array('type'=>0, 'result'=>false));
+			echo json_encode(-1);
 		}
+	}
+	
+	public function action_getContent()
+	{
+		echo Service_Pattern::prepareBagOfWords();
 	}
 
 } // End API

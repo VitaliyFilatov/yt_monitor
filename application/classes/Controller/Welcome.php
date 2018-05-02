@@ -42,9 +42,13 @@ class Controller_Welcome extends Controller_Template {
 		$data = Session::instance()->id() . $date->getTimestamp();
 		$patternPanel = View::factory('PatternPanel');
 		$channelPanelBody = View::factory('channelPanelBody');
+		$resultBody = View::factory('ResultBody');
+		$resultHeader = View::factory('ResultHeader');
 		$content = View::factory('Analyze');
 		$content->patternPanel = $patternPanel;
 		$content->channelPanelBody= $channelPanelBody;
+		$content->resultBody = $resultBody;
+		$content->resultHeader = $resultHeader;
 		$this->links[1]['id'] = 'reload';
 		$this->links[1]['active'] = 'active';
 		$this->template->sessionid = $data;
@@ -53,6 +57,7 @@ class Controller_Welcome extends Controller_Template {
 		$this->template->scripts = array("media/js/cookie-manager.js",
 				"media/js/pattern-panel.js",
 				"media/js/channel-panel.js",
+				"media/js/result-body.js",
 				"media/js/analyze.js");
 	}
 	
@@ -62,9 +67,13 @@ class Controller_Welcome extends Controller_Template {
 		$data = Session::instance()->id() . $date->getTimestamp();
 		$patternPanel = View::factory('PatternPanel');
 		$channelPanelBody = View::factory('channelPanelBody');
+		$resultBody = View::factory('ResultBody');
+		$resultHeader = View::factory('ResultHeader');
 		$content = View::factory('Monitor');
 		$content->patternPanel = $patternPanel;
 		$content->channelPanelBody= $channelPanelBody;
+		$content->resultBody = $resultBody;
+		$content->resultHeader = $resultHeader;
 		$this->links[2]['id'] = 'reload';
 		$this->links[2]['active'] = 'active';
 		$this->template->sessionid = $data;
@@ -73,6 +82,7 @@ class Controller_Welcome extends Controller_Template {
 		$this->template->scripts = array("media/js/cookie-manager.js",
 				"media/js/pattern-panel.js",
 				"media/js/channel-panel.js",
+				"media/js/result-body.js",
 				"media/js/monitor.js");
 	}
 	

@@ -61,4 +61,15 @@ class Model_Pattern extends Model_Base
 			return "database error";
 		}
 	}
+	
+	public static function setThreshold($id, $threshold)
+	{
+		$sql = "UPDATE `yt_monitor`.`pattern`
+				SET `threshold`= :threshold
+				WHERE `id`=:id;";
+		$query = DB::query(Database::UPDATE, $sql);
+		$query->param(':threshold', $threshold);
+		$query->param(':id', $id);
+		$query->execute();
+	}
 }

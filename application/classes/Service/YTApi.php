@@ -148,6 +148,11 @@ class Service_YTApi
         return $htmlBody;
     }
     
+    public function getVideoComment($session, $videoId)
+    {
+    	
+    }
+    
     public function getLastChannelsVideo($session, $channelId)
     {
     	//Check to ensure that the access token was successfully acquired.

@@ -28,8 +28,8 @@
             </div>
             <div class="card-footer">
                 <div class="row">
-                    <div class="col">
-                        <div class="progress display-none" style="height:30%; margin-top:5%; margin-bottom:5%">
+                    <div id="saveProgressLine" class="col">
+                        <div data-toggle="tooltip" data-placement="top" title="Прогресс создания паттерна" class="progress display-none" style="height:30%; margin-top:5%; margin-bottom:5%">
                             <div id="saveProgress" class="progress-bar progress-bar-custom" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
                         </div>
                     </div>

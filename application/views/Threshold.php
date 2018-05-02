@@ -3,7 +3,7 @@
     <?php echo $patternPanel; ?>
 
     <div id="editPanel" class="col">
-        <h2>Редактирование/добавление паттерна</h2>
+        <h2>Вычисление порогового значения</h2>
         <div class="card" style="color:#294a70;">
 
             <div class="row">

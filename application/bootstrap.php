@@ -257,7 +257,17 @@ Route::set('authorizeMonitor', '(authorizeMonitor(/<id>))')
 			'action'     => 'authorizeMonitor',
 	));
 	
-	
+Route::set('calcThreshold', '(calcThreshold(/<id>))')
+	->defaults(array(
+			'controller' => 'api',
+			'action'     => 'calcThreshold',
+	));
+
+Route::set('getContent', '(getContent(/<id>))')
+	->defaults(array(
+			'controller' => 'api',
+			'action'     => 'getContent',
+	));
 	
 	
 	

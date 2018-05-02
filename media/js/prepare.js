@@ -7,6 +7,7 @@ var patternNameInput = $("#patternNameInput")[0];
 var videoIdsInput = $("#videoIdsInput")[0];
 var patternList = $("#patternList")[0];
 var saveProgress = $("#saveProgress")[0];
+var saveProgressLine = $("#saveProgressLine")[0];
 var saveProgressWidthClass="";
 var patterns;
 var oldValue = 0;
@@ -97,17 +98,14 @@ function enableSaveBtn()
     saveBtn.classList.remove("disabled");
 }
 
-function setConfirmation()
-{
-    //cancelBtn.setAttribute("data-toggle","confirmation");
-    //$('#cancelBtn').confirmation('show');
-}
 
-function unsetConfirmation()
+
+function innerHTMLPatternPanel(id, name)
 {
-//    $('[data-toggle=confirmation]').confirmation({
-//        rootSelector: '[data-toggle=]',
-//    });
+    return '<div class="row"><div class="col-sm-9 text-middle-50">' + name + 
+                    '</div><div class="col-sm-3"><button id="editPatternBtn' + id +
+                '" type="button" data-toggle="tooltip" data-placement="top" title="Редактировать паттерн" class="btn btn-editor" style="background-color:transparent;"><i class="fas fa-edit"></i></button><button id="removePatternBtn' + id +
+                '" type="button" data-toggle="tooltip" data-placement="top" title="Удалить паттерн" class="btn btn-editor" style="background-color:transparent;"><i class="fas fa-times"></i></button></div></div>'
 }
 
 function onSaveBtnClick()
@@ -117,7 +115,6 @@ function onSaveBtnClick()
         return;
     }
     disableSaveBtn();
-    setConfirmation();
     inProcess = true;
     var sessionid = $("#sessionid")[0].innerHTML;
     clearProgress();
@@ -138,7 +135,6 @@ function onSaveBtnClick()
             editedPattern = -1;
             inProcess = false;
             enableSaveBtn();
-            unsetConfirmation();
         },
         success: function(data, textStatus, jqXHR )
         {
@@ -151,7 +147,6 @@ function onSaveBtnClick()
             {
                 alert("Субтитры для видео с id=" + data.result + "отсутствуют");
                 enableSaveBtn();
-                unsetConfirmation();
                 return;
             }
             data = data.result;
@@ -159,10 +154,7 @@ function onSaveBtnClick()
             var li = document.createElement("li");
             li.classList.add("list-group-item");
             li.id = "id" + data.id;
-            li.innerHTML = '<div class="row"><div class="col-sm-9">' + data.name + 
-                    '</div><div class="col-sm-3"><button id="editPatternBtn' + data.id +
-                '" type="button" class="btn" style="background-color:transparent"><img src="media/png/glyphicons-236-pen.png" width="20"/></button><button id="removePatternBtn' + data.id +
-                '" type="button" class="btn" style="background-color:transparent"><img src="media/png/glyphicons-208-remove.png" width="20"/></button></div></div>';
+            li.innerHTML = innerHTMLPatternPanel(data.id, data.name);
             if(editedPattern != -1)
             {
                 var el = $("#id" + editedPattern.id)[0];
@@ -177,11 +169,11 @@ function onSaveBtnClick()
             patterns.push(data);
             editedPattern = data;
             enableSaveBtn();
-            unsetConfirmation();
-        }
+            $('[data-toggle="tooltip"]').tooltip();        }
     });
     
     getSubResultSavePattern();
+    this.blur();
 }
 
 function getSubResultSavePattern()
@@ -242,6 +234,7 @@ function onEditPatternBtnClick()
         }
     }
     showEditPanel();
+    this.blur();
 }
 
 function onDeletePatternBtnClick()
@@ -270,6 +263,7 @@ function onDeletePatternBtnClick()
             }
         }
     });
+    this.blur();
 }
 
 function onStartPage()
@@ -277,7 +271,6 @@ function onStartPage()
     $('[data-toggle=confirmation]').confirmation({
         rootSelector: '[data-toggle=confirmation]',
     });
-    unsetConfirmation();
     $.ajax({
         url: "getAllPatterns?XDEBUG_SESSION_START=ECLIPSE_DBGP",
         type: "GET",
@@ -295,14 +288,12 @@ function onStartPage()
                 var li = document.createElement("li");
                 li.classList.add("list-group-item");
                 li.id = "id" + data[i].id;
-                li.innerHTML = '<div class="row"><div class="col-sm-9">' + data[i].name + 
-                        '</div><div class="col-sm-3"><button id="editPatternBtn' + data[i].id +
-                    '" type="button" class="btn" style="background-color:transparent"><img src="media/png/glyphicons-236-pen.png" width="20"/></button><button id="removePatternBtn' + data[i].id +
-                '" type="button" class="btn" style="background-color:transparent"><img src="media/png/glyphicons-208-remove.png" width="20"/></button></div></div>';
+                li.innerHTML = innerHTMLPatternPanel(data[i].id, data[i].name);
                 patternList.appendChild(li);
                 $("#editPatternBtn" + data[i].id)[0].addEventListener("click",onEditPatternBtnClick);
                 $("#removePatternBtn" + data[i].id)[0].addEventListener("click",onDeletePatternBtnClick);
             }
+            $('[data-toggle="tooltip"]').tooltip();
         }
     });
 }

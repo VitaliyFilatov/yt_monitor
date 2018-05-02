@@ -19,18 +19,8 @@
         <h3 id="infoWork" class="display-none">Результаты мониторинга: производится мониторинг</h3>
         <h3 id="infoDone" class="display-none">Результаты мониторинга: мониторинг приостановлен</h3>
         <div class="card" style="color:#294a70;">
-            <div class="card-header">
-                <h3 id="infoWork" class="display-none">производится мониторинг</h3>
-                <h3 id="infoDone" class="display-none">мониторинг остановлен</h3>
-            </div>
-            <div class="card-body">
-                <div id="scrollResult" class="pre-scrollable">
-                    <div class="container">
-                        <ul id="resultList" class="list-group" style="color:#294a70;">
-                        </ul>
-                    </div>
-                </div>
-            </div>
+            <?php echo $resultHeader; ?>
+            <?php echo $resultBody; ?>
             <div class="card-footer">
                 <button id="stopAnalyzeBtn" type="button" class="btn btn-outline-primary btn-outline-darkblue btn-block">Остановить мониторинг</button>
                 <button id="continueBtn" type="button" class="btn btn-outline-primary btn-outline-darkblue btn-block display-none" style="margin-top:0px;">Продолжить мониторинг</button>

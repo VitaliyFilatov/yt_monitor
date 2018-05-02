@@ -10,17 +10,13 @@ var idChannelInput = $("#idChannelInput")[0];
 var stopAnalyzeBtn = $("#stopAnalyzeBtn")[0];
 var pauseAnalyzeBtn = $("#pauseAnalyzeBtn")[0];
 var authLink = $("#authLink")[0];
-var resultList = $("#resultList")[0];
 var infoWork = $("#infoWork")[0];
 var infoDone = $("#infoDone")[0];
-var scrollResult = $("#scrollResult")[0];
 var continueBtn = $("#continueBtn")[0];
 var startAgainBtn = $("#startAgainBtn")[0];
 var editParametersBtn = $("#editParametersBtn")[0];
 var reload = $("#reload")[0];
 
-
-var lastVideoId;
 
 var subAnalyze;
 
@@ -53,26 +49,16 @@ function successAnalyze(data, textStatus, jqXHR)
             for (var i = 0; i < data.length; i++) {
                 var videoId = data[i].videoid;
                 var similarity = data[i].sim;
-                if (similarity == -1) {
-                    similarity = "нет субтитров";
-                }
-                var li = document.createElement("li");
-                li.classList.add("list-group-item");
-                li.innerHTML = '<div class="row"><div class="col-sm-7">' + videoId +
-                    '</div><div class="col-sm-5">' + similarity + '</div>';
-                resultList.appendChild(li);
-                scrollResult.scrollTop = scrollResult.scrollHeight;
-                if (i == data.length - 1) {
-                    lastVideoId = videoId;
-                }
+                addResult(videoId, similarity);
             }
+            $('[data-toggle="tooltip"]').tooltip();
         }
     }
-    if (data.return_type == 3) {
+    else if (data.return_type == 3) {
         pauseAnalyzeBtn.classList.add("display-none");
         startAgainBtn.classList.remove("display-none");
     }
-    if (data.return_type == 4) {
+    else if (data.return_type == 4) {
         continueBtn.classList.remove("display-none");
         pauseAnalyzeBtn.classList.add("display-none");
     }
@@ -111,7 +97,6 @@ function onStartAnalyzeBtnClick()
     startAgainBtn.classList.add("display-none");
     addChanelBtn.classList.add("display-none");
     editParametersBtn.classList.remove("display-none");
-    lastVideoId="";
     infoWork.classList.remove("display-none");
     infoDone.classList.add("display-none");
     subAnalyze=true;
@@ -140,53 +125,6 @@ function onStartAnalyzeBtnClick()
     getSubResultAnalyze();
 }
 
-function getSubResultAnalyze()
-{
-    var sessionid = getSessionId();
-    
-    $.ajax({
-        url: "getSubResultResAnalyze",
-        type: "POST",
-        data: {sessionid : sessionid},
-        error: function(jqXHR, textStatus, errorThrown )
-        {
-            console.log("error: " + errorThrown);
-        },
-        success: function(data, textStatus, jqXHR )
-        {
-            data = JSON.parse(data);
-            if(data != null)
-            {
-                console.log(data);
-                for(var i=0;i<data.length;i++)
-                {
-                    var videoId = data[i].videoid;
-                    var similarity = data[i].sim
-                    if(similarity == -1)
-                    {
-                        similarity = "нет субтитров";
-                    }
-                    var li = document.createElement("li");
-                    li.classList.add("list-group-item");
-                    li.innerHTML = '<div class="row"><div class="col-sm-7">' + videoId + 
-                                        '</div><div class="col-sm-5">' + similarity + '</div>'; 
-                    resultList.appendChild(li);
-                    scrollResult.scrollTop = scrollResult.scrollHeight;
-                    if(i == data.length - 1)
-                    {
-                        lastVideoId = videoId;
-                    }
-                } 
-            }
-            
-            
-            if(subAnalyze)
-            {
-                setTimeout(getSubResultAnalyze, 100);
-            }
-        }
-    });
-}
 
 function onStopAnalyzeBtnClick()
 {

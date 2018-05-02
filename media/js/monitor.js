@@ -12,7 +12,6 @@ var authLink = $("#authLink")[0];
 var resultList = $("#resultList")[0];
 var infoWork = $("#infoWork")[0];
 var infoDone = $("#infoDone")[0];
-var scrollResult = $("#scrollResult")[0];
 var continueBtn = $("#continueBtn")[0];
 var startAgainBtn = $("#startAgainBtn")[0];
 var editParametersBtn = $("#editParametersBtn")[0];
@@ -66,23 +65,14 @@ function monitorChannels(channelIds, patternId, sessionId, lastVideoId)
                         var similarity = data[i].sim
                         if($("#id" + videoId)[0] == undefined)
                         {
-                            if(similarity == -1)
-                            {
-                                similarity = "нет субтитров";
-                            }
-                            var li = document.createElement("li");
-                            li.classList.add("list-group-item");
-                            li.id = "id" + videoId;
-                            li.innerHTML = '<div class="row"><div class="col-sm-7">' + videoId + 
-                                    '</div><div class="col-sm-5">' + similarity + '</div>'; 
-                            resultList.appendChild(li);
-                            scrollResult.scrollTop = scrollResult.scrollHeight
+                            addResult(videoId, similarity);
                             if(i == data.length - 1)
                             {
                                 lastVideoId = videoId;
                             } 
                         }
                     }
+                    $('[data-toggle="tooltip"]').tooltip();
                 }
                 //after.setTime(after.getTime() + monitorStep);
                 setTimeout(monitorChannels, monitorStep, channelIds, patternId, sessionId, lastVideoId);
@@ -154,67 +144,6 @@ function onStartMonitorBtnClick()
     monitorChannels(channelIds, idPatternActive.substr(2), sessionid, lastVideoId);
 }
 
-function getSubResultAnalyze()
-{
-    var sessionid = getSessionId();
-    
-    $.ajax({
-        url: "getSubResultResAnalyze",
-        type: "POST",
-        data: {lastVideoId : lastVideoId,
-               sessionid : sessionid},
-        error: function(jqXHR, textStatus, errorThrown )
-        {
-            console.log("error: " + errorThrown);
-        },
-        success: function(data, textStatus, jqXHR )
-        {
-            console.log("subdata: "+data);
-            data = JSON.parse(data);
-            data = data.result
-            if(data != null)
-            {
-                data = JSON.parse(data);
-                var videoId = data.videoid;
-                var similarity = data.sim
-                if($("#id" + videoId)[0] == undefined)
-                {
-                    if(similarity == -1)
-                    {
-                        similarity = "нет субтитров";
-                    }
-                    var li = document.createElement("li");
-                    li.classList.add("list-group-item");
-                    li.id = "id" + videoId;
-                    li.innerHTML = '<div class="row"><div class="col-sm-7">' + videoId + 
-                            '</div><div class="col-sm-5">' + similarity + '</div>'; 
-                    resultList.appendChild(li);
-                    scrollResult.scrollTop = scrollResult.scrollHeight
-                }
-            }
-            
-            
-
-            
-            //lastVideoId = data.substr(0,11);
-//            if(oldValue != 101)
-//            {
-//                if(saveProgressWidthClass != "")
-//                {
-//                    saveProgress.classList.remove(saveProgressWidthClass); 
-//                }
-//                data = Math.round(data/5.0);
-//                data *= 5;
-//                saveProgress.classList.add("w-" + data);
-//                saveProgressWidthClass = "w-" + data;
-//            }
-            if(subAnalyze)
-            {
-                setTimeout(getSubResultAnalyze, 100);
-            }
-        }
-    });
-}
 
 function onStopAnalyzeBtnClick()
 {

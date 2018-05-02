@@ -32,6 +32,14 @@ class Entity_Pattern extends Entity_Abstract
      * @var PatternWords[]
      */
     public $words = array();
+    
+    
+    /**
+     * Порог деструктивности для паттерна
+     *
+     * @var double
+     */
+    public $threshold = 0;
 
     
     
@@ -51,6 +59,11 @@ class Entity_Pattern extends Entity_Abstract
             }
             
             $this->name = $this->model()->name;
+            $this->threshold = $this->model()->threshold;
+            if($this->threshold === null)
+            {
+            	$this->threshold = 0;
+            }
             
             if($withoutWords == null || $withoutWords == false)
             {
