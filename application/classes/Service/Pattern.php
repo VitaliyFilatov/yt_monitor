@@ -2,334 +2,11 @@
 defined('SYSPATH') or die('No direct script access.');
 
 class Service_Pattern
-{
-	private static $gap="gapgapgapgapgapgapgapgapgapgapgapgapgapgapgapgapgapgapgapgapgapgapgapgapgapgapgapgapgapgapgapgapgapgapgapgap";
-	
+{	
 	private static $sentThreshold = 0.77;
 	
 	private static $max_timeout = 10;
-	
-
-	protected static function getSubtitleFromSrvice($videoId)
-	{
-		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-		
-		curl_setopt($ch, CURLOPT_URL, "https://www.youtube.com/watch?v=" . $videoId);
-		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT ,0);
-		curl_setopt($ch, CURLOPT_TIMEOUT, 400);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-		curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-				'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-				'Accept-Encoding:gzip',
-				'Accept-Language: ru-RU,ru;q=0.8,en-US;q=0.5,en;q=0.3',
-				'Connection:keep-alive',
-				'Cookie: VISITOR_INFO1_LIVE=lO1LV2Cgcoo; YSC=_JJyOVysdSY; PREF=f1=50000000',
-				'User-Agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.186 Safari/537.36'));
-		
-		
-		$output = curl_exec($ch);
-		if($output === false)
-		{
-			$err = curl_error($ch);
-			$errno = curl_errno($ch);
-			return new Entity_ReturnResult(0,0);
-		}
-		curl_close($ch);
-		try
-		{
-			$output = gzdecode($output);
-			$param = substr($output,
-					strpos($output, '"getTranscriptEndpoint":{"params":') + 35,
-					strpos($output, '"', strpos($output, '"getTranscriptEndpoint":{"params":') + 35) - strpos($output, '"getTranscriptEndpoint":{"params":') - 35);
-			
-			$xsrftoken = substr($output,
-					strpos($output, 'XSRF_TOKEN":"') + 13,
-					strpos($output, '"', strpos($output, 'XSRF_TOKEN":"') + 13) - strpos($output, 'XSRF_TOKEN":"') - 13);
-			
-			$xsrftoken = urlencode($xsrftoken);
-			
-			$ch = curl_init();
-			curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-			
-			curl_setopt($ch, CURLOPT_URL, "https://www.youtube.com/service_ajax?name=getTranscriptEndpoint");
-			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT ,0);
-			curl_setopt($ch, CURLOPT_TIMEOUT, 400);
-			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-			curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-					'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-					'Accept-Encoding:gzip',
-					'Accept-Language: ru-RU,ru;q=0.8,en-US;q=0.5,en;q=0.3',
-					'Connection:keep-alive',
-					'Cookie: VISITOR_INFO1_LIVE=lO1LV2Cgcoo; YSC=_JJyOVysdSY; PREF=f1=50000000',
-					'User-Agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.186 Safari/537.36'));
-			curl_setopt($ch, CURLOPT_POSTFIELDS, "sej=%7B%22clickTrackingParams%22%3A%22CFAQzKsBGAAiEwjsmum4oIDbAhUnFJsKHUbtBeUo-B0%3D%22%2C%22commandMetadata%22%3A%7B%22webCommandMetadata%22%3A%7B%22url%22%3A%22%2Fservice_ajax%22%2C%22sendPost%22%3Atrue%7D%7D%2C%22getTranscriptEndpoint%22%3A%7B%22params%22%3A%22".$param."%253D%22%7D%7D&csn=qqq&session_token=".$xsrftoken);
-			curl_setopt($ch, CURLOPT_POST, 1);
-			$output = curl_exec($ch);
-			if($output === false)
-			{
-				return new Entity_ReturnResult(0, 0);
-			}
-			try 
-			{
-				$output = gzdecode($output);
-				$data = json_decode($output);
-				$data = $data->{'data'}->
-				{'actions'}[0]->
-				{'openTranscriptAction'}->
-				{'transcriptRenderer'}->
-				{'transcriptRenderer'}->
-				{'body'}->
-				{'transcriptBodyRenderer'}->
-				{'cueGroups'};
-				$subtles = "";
-				foreach($data as $t)
-				{
-					$subtles = $subtles . $t->{'transcriptCueGroupRenderer'}->
-					{'cues'}[0]->
-					{'transcriptCueRenderer'}->
-					{'cue'}->
-					{'runs'}[0]->
-					{'text'} . "\n";
-				}
-				
-				$filename = APPPATH . "subtle_files/" .
-						$videoId . ".txt";
-						
-						$file = fopen($filename, "a");
-						fclose($file);
-						file_put_contents($filename, $subtles);
-						return new Entity_ReturnResult(1, $subtles);
-			}
-			catch(Exception $e)
-			{
-				return new Entity_ReturnResult(0, 0);
-			}
-		}
-		catch(Exception $e)
-		{
-			return new Entity_ReturnResult(0, 0);
-		}
-	}
-	
-	protected static function getSubtitleByVideId($videoId)
-	{
-	    	$filename = APPPATH ."subtle_files/" .
-	      	$videoId .
-	      	".txt";
-	    	if(!file_exists($filename))
-	    	{
-	    		return Service_Pattern::getSubtitleFromSrvice($videoId);
-	    	}
-	    	return new Entity_ReturnResult(1, file_get_contents($filename));
-	}
     
-    
-	protected static function getServiceContentAnaliz($text, $videoId, $strdelimeter='\n', $itemdelimeter=' ')
-    {
-        $ch = curl_init();
-        
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-        
-        curl_setopt($ch, CURLOPT_URL, 'https://istio.com/rus/text/analyz#top');
-        
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-            'Host: istio.com',
-            'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:58.0) Gecko/20100101 Firefox/58.0',
-            'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-            'Accept-Language: ru-RU,ru;q=0.8,en-US;q=0.5,en;q=0.3',
-            'Accept-Encoding: gzip, deflate, br',
-            'Referer: https://istio.com/rus/text/analyz',
-            'Content-Type: application/x-www-form-urlencoded',
-            'Cookie: PHPSESSID=671587821de9db51fc6084117a0dcf9b; _ym_uid=1520029746795772207; _ym_isad=2; _ym_visorc_27722736=w',
-            'Connection: keep-alive',
-            'Upgrade-Insecure-Requests: 1',
-            'Pragma: no-cache',
-            'Cache-Control: no-cache'));
-        if(strlen($text) < 100)
-        {
-        	$text .= " " . Service_Pattern::$gap;
-        }
-        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query(array('ContentForm[content]' => $text,
-            'stat_word' => 'Анализ текста')));
-        curl_setopt($ch, CURLOPT_POST, 1);
-        
-//         curl_setopt($ch, CURLOPT_PROXY, "1.179.183.86");
-//         curl_setopt($ch, CURLOPT_PROXYPORT, "8080");
-        
-        
-        
-        
-        $res = curl_exec($ch);
-        if($res == false)
-        {
-        	$err = curl_error($ch);
-        	$errno = curl_errno($ch);
-        	return false;
-        }
-        curl_close($ch);
-        $output = gzdecode($res);
-        if($output === false)
-        {
-        	return false;
-        }
-        $dom = new DOMDocument();
-        libxml_use_internal_errors(true);
-        $dom->loadHTML($output);
-        libxml_use_internal_errors(false);
-        $tabpanel = $dom->getElementById('words');
-        $table = $tabpanel->getElementsByTagName('table')->item(0);
-        $table->removeChild($table->getElementsByTagName('thead')->item(0));
-        $trs = $table->getElementsByTagName('tr');
-        $tds;
-        $result;
-        $data='';
-        for($i=0; $i<$trs->length; $i++)
-        {
-            $tds = $trs->item($i)->getElementsByTagName('td');
-            $result='';
-            for($j=0; $j<$tds->length; $j++)
-            {
-            	if(strcmp($tds->item($j)->textContent, Service_Pattern::$gap) != 0)
-            	{
-            		$result.=$tds->item($j)->textContent . $itemdelimeter;
-            	}
-            }
-            $data .= $result . $strdelimeter;
-        };
-        
-        $filename = APPPATH . "content_analyze/" .
-          $videoId . ".txt";
-          
-          $file = fopen($filename, "a");
-          fclose($file);
-          file_put_contents($filename, $data);
-        
-        return $data;
-    }
-    
-    protected static function getContentAnaliz($text, $videoId, $strdelimeter='\n', $itemdelimeter=' ')
-    {
-    	$filename = APPPATH . "content_analyze/" .
-      	$videoId .
-      	".txt";
-      	if(!file_exists($filename))
-      	{
-      		$res = Service_Pattern::getServiceContentAnaliz($text,
-      				$videoId,
-      				$strdelimeter,
-      				$itemdelimeter);
-      		return Service_Pattern::getServiceContentAnaliz($text,
-      				$videoId,
-      				$strdelimeter,
-      				$itemdelimeter);
-      	}
-      	$res = file_get_contents($filename);
-      	return file_get_contents($filename);
-    }
-    
-    protected static function getContentAnalyzeIstio($text)
-    {
-    	$ch = curl_init();
-    	
-    	curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-    	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-    	
-    	curl_setopt($ch, CURLOPT_URL, 'https://istio.com/rus/text/analyz#top');
-    	
-    	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-    	curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-    			'Host: istio.com',
-    			'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:58.0) Gecko/20100101 Firefox/58.0',
-    			'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-    			'Accept-Language: ru-RU,ru;q=0.8,en-US;q=0.5,en;q=0.3',
-    			'Accept-Encoding: gzip, deflate, br',
-    			'Referer: https://istio.com/rus/text/analyz',
-    			'Content-Type: application/x-www-form-urlencoded',
-    			'Cookie: PHPSESSID=671587821de9db51fc6084117a0dcf9b; _ym_uid=1520029746795772207; _ym_isad=2; _ym_visorc_27722736=w',
-    			'Connection: keep-alive',
-    			'Upgrade-Insecure-Requests: 1',
-    			'Pragma: no-cache',
-    			'Cache-Control: no-cache'));
-    	if(strlen($text) < 100)
-    	{
-    		$text .= " " . Service_Pattern::$gap;
-    	}
-    	curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query(array('ContentForm[content]' => $text,
-    			'stat_word' => 'Анализ текста')));
-    	curl_setopt($ch, CURLOPT_POST, 1);
-    	
-    	
-    	
-    	
-    	$res = curl_exec($ch);
-    	if($res == false)
-    	{
-    		$err = curl_error($ch);
-    		$errno = curl_errno($ch);
-    	}
-    	curl_close($ch);
-    	try {
-    		$output = gzdecode($res);
-    	}
-    	catch(Exception $e)
-    	{
-    		return array();
-    	}
-    	if($output === false)
-    	{
-    		return array();
-    	}
-    	$dom = new DOMDocument();
-    	libxml_use_internal_errors(true);
-    	$dom->loadHTML($output);
-    	libxml_use_internal_errors(false);
-    	$tabpanel = $dom->getElementById('words');
-    	$table = $tabpanel->getElementsByTagName('table')->item(0);
-    	$table->removeChild($table->getElementsByTagName('thead')->item(0));
-    	$trs = $table->getElementsByTagName('tr');
-    	$tds;
-    	$words = array();
-    	for($i=0; $i<$trs->length; $i++)
-    	{
-    		$tds = $trs->item($i)->getElementsByTagName('td');
-    		if($tds->length == 6)
-    		{
-    			if(strcmp($tds->item(1)->textContent, Service_Pattern::$gap) != 0)
-    			{
-    				$word = new Entity_BagWords();
-    				$word->word = $tds->item(1)->textContent;
-    				$word->freq = $tds->item(2)->textContent;
-    				array_push($words, $word);
-    			}
-    		}
-    	};
-    	
-    	
-    	return $words;
-    }
-    
-    
-    static function parseContentAnalize($text, $strdelimeter='\n', $itemdelimeter = ' ')
-    {
-        $words = explode($strdelimeter, $text);
-        $wordsstat=array();
-        $sum = 0;
-        foreach($words as $str)
-        {
-            $items = explode($itemdelimeter, $str);
-            if(count($items) == 7)
-            {
-                $wordsstat[$items[1]] = $items[2];
-                $sum += $items[2];
-            }
-        }
-        return $wordsstat;
-    }
     
     static function getStatistics($arrayStats)
     {
@@ -432,13 +109,13 @@ class Service_Pattern
         foreach($videoIds as $videoId)
         {
         	$i++;
-            $subtitle = $this->getSubtitleByVideId($videoId);
+            $subtitle = Service_SubtleService::getSubtitleByVideId($videoId);
             if($subtitle->return_type === 0)
             {
             	return new Entity_ReturnResult(0, $videoId);
             }
             $subtitle = $subtitle->result;
-            array_push($wordsstat, $this->parseContentAnalize($this->getContentAnaliz($subtitle, $videoId)));
+            array_push($wordsstat, Service_ContentAnalyse::parseContentAnalize(Service_ContentAnalyse::getContentAnaliz($subtitle, $videoId)));
             array_push($videoIdsWithSubtls, $videoId);
             Model_CreateResult::addResult($sessionid, round($i/count($videoIds)*100));
             
@@ -563,7 +240,7 @@ class Service_Pattern
     
     public static function analizeVideo($videoId, $pattern)
     {
-        $subtitle = Service_Pattern::getSubtitleByVideId($videoId);
+        $subtitle = Service_SubtleService::getSubtitleByVideId($videoId);
         if($subtitle->return_type == 0)
         {
         	return "nosub";
@@ -571,7 +248,7 @@ class Service_Pattern
         else 
         {
         	$subtitle = $subtitle->result;
-        	$resCA = Service_Pattern::getStatistics(array(Service_Pattern::parseContentAnalize(Service_Pattern::getContentAnaliz($subtitle, $videoId))));
+        	$resCA = Service_Pattern::getStatistics(array(Service_ContentAnalyse::parseContentAnalize(Service_ContentAnalyse::getContentAnaliz($subtitle, $videoId))));
         	return Service_Pattern::getSimilarityWithPattern($pattern, $resCA);
         }
     }
@@ -741,59 +418,6 @@ class Service_Pattern
     	return new Entity_ReturnResult(0, "true");
     }
     
-    public static function analizeVideos($videoIds, $patternId, $sessionid, $request, $session, $channelId)
-    {
-    	$pattern = new Pattern($patternId);
-    	foreach ($videoIds as $key=>$videoId)
-    	{
-    		if(Model_StopAnalyze::isStop($sessionid))
-    		{
-    			return new Entity_ReturnResult(3, "true");
-    		}
-    		if(Model_PauseAnalyze::isPause($sessionid))
-    		{
-    			$sliced = array_slice($videoIds, $key);
-    			Model_SaveResult::addResult($sessionid, $sliced, $patternId);
-    			return new Entity_ReturnResult(4, $sessionid);
-    		}
-    		if($videoId == null)
-    		{
-    			continue;
-    		}
-    		$sim = Service_Pattern::analizeVideo($videoId, $pattern);
-    		if($sim == "nosub")
-    		{
-    			$sim = -1;
-    		}
-    		if($pattern->threshold <= $sim)
-    		{
-    			$videoInfo = Service_Pattern::getInfo($request, $session, $videoId, "authorize", $channelId, $sessionid);
-    			if($videoInfo->return_type == 1)
-    			{
-    				return $videoInfo;
-    			}
-    			else if($videoInfo->return_type == 0)
-    			{
-    				Model_Result::addResultWithInfo($sessionid,
-    						$videoId,
-    						$sim,
-    						$videoInfo->result->ERpost,
-    						$videoInfo->result->ERbyviews,
-    						$videoInfo->result->positiveCount,
-    						$videoInfo->result->negativeCount);
-    			}
-    			else {
-    				Model_Result::addResult($sessionid, $videoId, $sim);
-    			}
-    		}
-    		else
-    		{
-    			Model_Result::addResult($sessionid, $videoId, $sim);
-    		}
-    	}
-    	return new Entity_ReturnResult(0, "true");
-    }
-    
     public static function analizeVideosForThreshold($videoIds, $patternId, $sessionid)
     {
     	$sims = array();
@@ -918,26 +542,9 @@ class Service_Pattern
     
     public static function sentimentComments($request, $session, $videoId, $sessionid)
     {
-    	$apiServicre = new Service_YTApi('1067254332521-4o8abvtsaj2sihjbj82qfa17j1vg8l6r.apps.googleusercontent.com',
-    			'oMbF7Zj1K9cCVXw3ZVGFN5z-');
-    	
     	try
     	{
-    		$apiServicre->authorize("authorize", $request, $session);
-    		$comments = Model_VideoComment::getVideoComments($videoId);
-    		if(empty($comments))
-    		{
-    			$htmlBody = $apiServicre->getVideoComment($session, $videoId);
-    			if($htmlBody->return_type !== 0)
-    			{
-    				return $htmlBody;
-    			}
-    			Model_VideoComment::addComments($videoId, $htmlBody->result);
-    		}
-    		else 
-    		{
-    			$htmlBody = new Entity_ReturnResult(0, $comments);
-    		}
+    		$htmlBody = Service_VideoComments::getVideoComments($request, $session, $videoId);
     		$sentiment = array();
     		foreach($htmlBody->result as $i=>$comment)
     		{
@@ -950,7 +557,7 @@ class Service_Pattern
     			{
     				return $isStop;
     			}
-    			$words = Service_Pattern::getContentAnalyzeIstio($comment);
+    			$words = Service_ContentAnalyse::getContentAnalyzeIstio($comment);
     			$denominator = Model_PositiveWord::getCountUniqWords()+
     			Model_NegativeWord::getCountUniqWords()+
     			Model_NegativeWord::getSumFreq();
@@ -997,6 +604,9 @@ class Service_Pattern
     	}
     }
     
+    
+    //функция при работе приложения не используется
+    //нужна для получения обучающей выборки навиного байесовского классификатора 
     public static function prepareBagOfWords($request, $session)
     {
     	$apiServicre = new Service_YTApi('1067254332521-4o8abvtsaj2sihjbj82qfa17j1vg8l6r.apps.googleusercontent.com',
@@ -1019,7 +629,7 @@ class Service_Pattern
     				{
     					break;
     				}
-    				$words = Service_Pattern::getContentAnalyzeIstio($comment);
+    				$words = Service_ContentAnalyse::getContentAnalyzeIstio($comment);
     				$denominator = Model_PositiveWord::getCountUniqWords()+
     				Model_NegativeWord::getCountUniqWords()+
     				Model_NegativeWord::getSumFreq();
