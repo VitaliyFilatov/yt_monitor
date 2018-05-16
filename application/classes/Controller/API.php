@@ -72,7 +72,7 @@ class Controller_API extends Controller {
 		catch(Exception $e)
 		{
 			Model_CreateResult::init($sessionid);
-			echo json_encode(array('type'=>0, 'result'=>false));
+			echo json_encode(new Entity_ReturnResult(0, false));
 		}
 	}
 	
@@ -110,7 +110,7 @@ class Controller_API extends Controller {
 		Model_Result::init($sessionid);
 		
 		$result = Service_Pattern::analizeChannels($request, $session, $channelIds, $patternId, $sessionid);
-		if($result['return_type'] !== 0)
+		if($result->return_type !== 0)
 		{
 			echo json_encode($result);
 			return;
@@ -185,22 +185,23 @@ class Controller_API extends Controller {
 		Model_PauseAnalyze::pause($sessionid);
 	}
 	
-	public function action_analyzeChannel()
-	{
-		$request = $this->request;
-		$session = Session::instance();
-		$servicePattern = new Service_Pattern();
+// 	public function action_analyzeChannel()
+// 	{
+// 		$request = $this->request;
+// 		$session = Session::instance();
+// 		$servicePattern = new Service_Pattern();
 		
-		$queue = new Service_Queue(512, 2, 2);
-		$queue->initResAnalyze();
+// 		$queue = new Service_Queue(512, 2, 2);
+// 		$queue->initResAnalyze();
 		
-		$body = $this->request->post();
-		$channelId = $body['channelId'];
-		$patternId = $body['patternId'];
-		$result = Service_Pattern::analizeChannel($request, $session, $channelId, $patternId, $queue);
-		echo json_encode($result);
+// 		$body = $this->request->post();
+// 		$channelId = $body['channelId'];
+// 		$patternId = $body['patternId'];
+// 		$result = Service_Pattern::analizeChannel($request, $session, $channelId, $patternId, $queue);
+// 		echo json_encode($result);
 		
-	}
+// 	}
+	
 	public function action_checkLastVideos()
 	{
 		$request = $this->request;

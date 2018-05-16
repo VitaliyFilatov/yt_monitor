@@ -108,6 +108,7 @@ function onStartAnalyzeBtnClick() {
     channelPanel.classList.add("col-sm-5");
     resultPanel.classList.remove("display-none");
 
+    continueBtn.classList.add("display-none");
     startAnalyzeBtn.classList.add("display-none");
     pauseAnalyzeBtn.classList.remove("display-none");
     startAgainBtn.classList.add("display-none");
@@ -126,7 +127,7 @@ function onStartAnalyzeBtnClick() {
 
     var sessionid = getSessionId();
     $.ajax({
-        url: "analyzeChannels",
+        url: "analyzeChannels?XDEBUG_SESSION_START=ECLIPSE_DBGP",
         type: "POST",
         data: {
             channelIds: channelIds,

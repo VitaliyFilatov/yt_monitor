@@ -13,10 +13,109 @@ class Service_YTApi
     protected $youtube;
     protected $tokenSessionKey;
     
+    private static function execGetChannelsVideo($channelId, $client)
+    {
+    	$videoIds = array();
+    	$pageToken = '';
+    	
+    	do
+    	{
+    		$response = $client->youtube->search->listSearch('snippet', array('maxResults' => 50,
+    				'channelId' => $channelId,
+    				'pageToken' => $pageToken
+    		));
+    		
+    		foreach($response->items as $item)
+    		{
+    			array_push($videoIds, $item->id->videoId);
+    		}
+    		
+    		if(isset($response->nextPageToken))
+    		{
+    			$pageToken = $response->nextPageToken;
+    		}
+    	}
+    	while(isset($response->nextPageToken));
+    	
+    	return new Entity_ReturnResult(0, $videoIds);
+    }
+    
+    
+    private static function execGetVideoComment($videoId, $client)
+    {
+    	$сomments = array();
+    	$pageToken = '';
+    	
+    	do
+    	{
+    		$response = $client->youtube->commentThreads->listCommentThreads('snippet,replies', array('maxResults' => 100,
+    				'videoId' => $videoId,
+    				'pageToken' => $pageToken
+    		));
+    		
+    		foreach($response->items as $item)
+    		{
+    			array_push($сomments, $item->snippet->topLevelComment->snippet->textDisplay);
+    		}
+    		
+    		if(isset($response->nextPageToken))
+    		{
+    			$pageToken = $response->nextPageToken;
+    		}
+    	}
+    	while(isset($response->nextPageToken));
+    	
+    	return new Entity_ReturnResult(0, $сomments);
+    }
+    
+    private static function execGetVideoStatistics($videoId, $client)
+    {
+    	$response = $client->youtube->videos->listVideos('statistics', array('id' => $videoId));
+    	
+    	return new Entity_ReturnResult(0, $response->items[0]->statistics);
+    }
+    
+    private static function execGetChannelStatistics($channelId, $client)
+    {
+    	$response = $client->youtube->channels->listChannels('statistics', array('id' => $channelId));
+    	
+    	return new Entity_ReturnResult(0, $response->items[0]->statistics);
+    }
+    
+    private static function execGetLastChannelsVideo($channelId, $client)
+    {
+    	$videoIds = array();
+    	$pageToken = '';
+    	
+    	$response = $client->youtube->search->listSearch('snippet', array('maxResults' => 1,
+    			'channelId' => $channelId,
+    			'order' => 'date'
+    	));
+    	
+    	foreach($response->items as $item)
+    	{
+    		array_push($videoIds, $item->id->videoId);
+    	}
+    	
+    	return new Entity_ReturnResult(0, $videoIds);
+    }
+    
+    
     public function __construct($clientId, $clientSecret)
     {
         $this->OAUTH2_CLIENT_ID = $clientId;
         $this->OAUTH2_CLIENT_SECRET = $clientSecret;
+    }
+    
+    private function getAuthLink($session)
+    {
+    	$state = mt_rand();
+    	$this->client->setState($state);
+    	$session->set('state', $state);
+    	
+    	$authUrl = $this->client->createAuthUrl();
+    	$htmlBody = '<a id="authLink" href=' . $authUrl . '></a>';
+    	return $htmlBody;
     }
    
     /**
@@ -62,360 +161,75 @@ class Service_YTApi
         if ($this->client->getAccessToken())
         {
         	$session->set($this->tokenSessionKey, $this->client->getAccessToken());
-        	//$this->client->addScope(Google_Service_YouTube::YOUTUBE_FORCE_SSL);
         	return $result;
         }
         else
         {
-        	$state = mt_rand();
-        	$this->client->setState($state);
-        	$session->set('state', $state);
-        	
-        	$authUrl = $this->client->createAuthUrl();
-        	$htmlBody = '<a id="authLink" href=' . $authUrl . '></a>';
-        	return $htmlBody;
+        	return $this->getAuthLink($session);
         }
+    }
+    
+    private function useService($session, $exec, $arg1, $arg2)
+    {
+    	if ($this->client->getAccessToken()) {
+    		try {
+    			
+    			$videoIds = array();
+    			$pageToken = '';
+    			
+    			$htmlBody = call_user_func($exec, $arg1, $arg2);
+    			
+    		} catch (Google_Service_Exception $e) {
+    			$htmlBody = sprintf('<p>A service error occurred: <code>%s</code></p>',
+    					htmlspecialchars($e->getMessage()));
+    			Kohana::$log->add(Log::DEBUG, $e->getMessage());
+    			if($e->getCode() == 401 || $e->getCode() == 403)
+    			{
+    				$htmlBody = new Entity_ReturnResult(1, $htmlBody);
+    			}
+    			else
+    			{
+    				$htmlBody = new Entity_ReturnResult(2, $htmlBody);
+    			}
+    		} catch (Google_Exception $e) {
+    			$htmlBody = sprintf('<p>An client error occurred: <code>%s</code></p>',
+    					htmlspecialchars($e->getMessage()));
+    			Kohana::$log->add(Log::DEBUG, $e->getMessage());
+    			$htmlBody = new Entity_ReturnResult(1, $htmlBody);
+    		}
+    		
+    		$session->set($this->tokenSessionKey, $this->client->getAccessToken());
+    	}
+    	if($htmlBody->return_type === 1)
+    	{
+    		$htmlBody = new Entity_ReturnResult(1, $this->getAuthLink($session));
+    	}
+    	return $htmlBody;
     }
     
     public function getChannelsVideo($session, $channelId)
     {
-        // Check to ensure that the access token was successfully acquired.
-        if ($this->client->getAccessToken()) {
-            try {
-            	$this->client->addScope(Google_Service_YouTube::YOUTUBE_FORCE_SSL);
-                /*
-                 * Before channel shelves will appear on your channel's web page, browse
-                 * view needs to be enabled. If you know that your channel already has
-                 * it enabled, or if you want to add a number of sections before enabling it,
-                 * you can skip the call to enable_browse_view().
-                 */
-                
-                // Call the YouTube Data API's channels.list method to retrieve your channel.
-                //$listResponse = $youtube->channels->listChannels('brandingSettings', array('mine' => true));
-                //$response = $youtube->channels->listChannels('invideoPromotion', array('id' => 'UC6zOnSAtJzz166Y5B7tImNA'));
-                //$response = $youtube->videos->listVideos('contentDetails', array('id' => 'MHjrim3TdVE'));
-                $videoIds = array();
-                $pageToken = '';
-               
-                do
-                {
-                    $response = $this->youtube->search->listSearch('snippet', array('maxResults' => 50,
-                    	'channelId' => $channelId,
-                        'pageToken' => $pageToken
-                    ));
-                    
-                    foreach($response->items as $item)
-                    {
-                    	array_push($videoIds, $item->id->videoId);
-                    }
-                    
-                    if(isset($response->nextPageToken))
-                    {
-                        $pageToken = $response->nextPageToken;
-                    }
-                }
-                while(isset($response->nextPageToken));
-                
-                
-                
-                //$response->items[0]->id->videoId
-                
-                //$subtitle = getSubtitleByVideId($videoId);
-                //$subtitle = $subtitle;
-                $htmlBody = array('return_type' => 0, 'result' => $videoIds);
-                
-            } catch (Google_Service_Exception $e) {
-                $htmlBody = sprintf('<p>A service error occurred: <code>%s</code></p>',
-                    htmlspecialchars($e->getMessage()));
-                Kohana::$log->add(Log::DEBUG, $e->getMessage());
-                if($e->getCode() == 401 || $e->getCode() == 403)
-                {
-                	$htmlBody = array('return_type' => 1, 'result' => $htmlBody);
-                }
-                else 
-                {
-                	$htmlBody = array('return_type' => 2, 'result' => $htmlBody);
-                }
-            } catch (Google_Exception $e) {
-                $htmlBody = sprintf('<p>An client error occurred: <code>%s</code></p>',
-                    htmlspecialchars($e->getMessage()));
-                Kohana::$log->add(Log::DEBUG, $e->getMessage());
-                $htmlBody = array('return_type' => 2, 'result' => $htmlBody);
-            }
-            
-            $session->set($this->tokenSessionKey, $this->client->getAccessToken());
-        }
-        if($htmlBody['return_type'] === 1) 
-        {
-            // If the user hasn't authorized the app, initiate the OAuth flow
-            $state = mt_rand();
-            $this->client->setState($state);
-            $session->set('state', $state);
-            
-            $authUrl = $this->client->createAuthUrl();
-            $htmlBody = '<a id="authLink" href=' . $authUrl . '></a>';
-            $htmlBody = array('return_type' => 1, 'result' => $htmlBody);
-        }
-        return $htmlBody;
+    	return $this->useService($session, "Service_YTApi::execGetChannelsVideo", $channelId, $this);
     }
     
     public function getVideoComment($session, $videoId)
     {
-    	if ($this->client->getAccessToken()) {
-    		try {
-    			
-    			/*
-    			 * Before channel shelves will appear on your channel's web page, browse
-    			 * view needs to be enabled. If you know that your channel already has
-    			 * it enabled, or if you want to add a number of sections before enabling it,
-    			 * you can skip the call to enable_browse_view().
-    			 */
-    			
-    			// Call the YouTube Data API's channels.list method to retrieve your channel.
-    			//$listResponse = $youtube->channels->listChannels('brandingSettings', array('mine' => true));
-    			//$response = $youtube->channels->listChannels('invideoPromotion', array('id' => 'UC6zOnSAtJzz166Y5B7tImNA'));
-    			//$response = $youtube->videos->listVideos('contentDetails', array('id' => 'MHjrim3TdVE'));
-    			$сomments = array();
-    			$pageToken = '';
-    			$this->client->addScope(Google_Service_YouTube::YOUTUBE_FORCE_SSL);
-    			
-    			do
-    			{
-    				$response = $this->youtube->commentThreads->listCommentThreads('snippet,replies', array('maxResults' => 100,
-    						'videoId' => $videoId,
-    						'pageToken' => $pageToken
-    				));
-    				
-    				foreach($response->items as $item)
-    				{
-    					array_push($сomments, $item->snippet->topLevelComment->snippet->textDisplay);
-    				}
-    				
-    				if(isset($response->nextPageToken))
-    				{
-    					$pageToken = $response->nextPageToken;
-    				}
-    			}
-    			while(isset($response->nextPageToken));
-    			
-    			
-    			
-    			//$response->items[0]->id->videoId
-    			
-    			//$subtitle = getSubtitleByVideId($videoId);
-    			//$subtitle = $subtitle;
-    			$htmlBody = array('return_type' => 0, 'result' => $сomments);
-    			
-    		} catch (Google_Service_Exception $e) {
-    			$htmlBody = sprintf('<p>A service error occurred: <code>%s</code></p>',
-    					htmlspecialchars($e->getMessage()));
-    			Kohana::$log->add(Log::DEBUG, $e->getMessage());
-    			if($e->getCode() == 401 || $e->getCode() == 403)
-    			{
-    				$htmlBody = array('return_type' => 1, 'result' => $htmlBody);
-    			}
-    			else
-    			{
-    				$htmlBody = array('return_type' => 2, 'result' => $htmlBody);
-    			}
-    		} catch (Google_Exception $e) {
-    			$htmlBody = sprintf('<p>An client error occurred: <code>%s</code></p>',
-    					htmlspecialchars($e->getMessage()));
-    			Kohana::$log->add(Log::DEBUG, $e->getMessage());
-    			$htmlBody = array('return_type' => 2, 'result' => $htmlBody);
-    		}
-    		
-    		$session->set($this->tokenSessionKey, $this->client->getAccessToken());
-    	}
-    	if($htmlBody['return_type'] === 1)
-    	{
-    		// If the user hasn't authorized the app, initiate the OAuth flow
-    		$state = mt_rand();
-    		$this->client->setState($state);
-    		$session->set('state', $state);
-    		
-    		$authUrl = $this->client->createAuthUrl();
-    		$htmlBody = '<a id="authLink" href=' . $authUrl . '></a>';
-    		$htmlBody = array('return_type' => 1, 'result' => $htmlBody);
-    	}
-    	return $htmlBody;
+    	return $this->useService($session, "Service_YTApi::execGetVideoComment", $videoId, $this);
     }
 
     public function getVideoStatistics($session, $videoId)
     {
-    	if ($this->client->getAccessToken()) {
-    		try {
-    			
-    			$this->client->addScope(Google_Service_YouTube::YOUTUBE_FORCE_SSL);
-    			$response = $this->youtube->videos->listVideos('statistics', array('id' => $videoId));
-    			
-    			
-    			
-    			//$response->items[0]->id->videoId
-    			
-    			//$subtitle = getSubtitleByVideId($videoId);
-    			//$subtitle = $subtitle;
-    			$htmlBody = array('return_type' => 0,
-    					'result' => $response->items[0]->statistics);
-    			
-    		} catch (Google_Service_Exception $e) {
-    			$htmlBody = sprintf('<p>A service error occurred: <code>%s</code></p>',
-    					htmlspecialchars($e->getMessage()));
-    			Kohana::$log->add(Log::DEBUG, $e->getMessage());
-    			if($e->getCode() == 401 || $e->getCode() == 403)
-    			{
-    				$htmlBody = array('return_type' => 1, 'result' => $htmlBody);
-    			}
-    			else
-    			{
-    				$htmlBody = array('return_type' => 2, 'result' => $htmlBody);
-    			}
-    		} catch (Google_Exception $e) {
-    			$htmlBody = sprintf('<p>An client error occurred: <code>%s</code></p>',
-    					htmlspecialchars($e->getMessage()));
-    			Kohana::$log->add(Log::DEBUG, $e->getMessage());
-    			$htmlBody = array('return_type' => 2, 'result' => $htmlBody);
-    		}
-    		
-    		$session->set($this->tokenSessionKey, $this->client->getAccessToken());
-    	}
-    	if($htmlBody['return_type'] === 1)
-    	{
-    		// If the user hasn't authorized the app, initiate the OAuth flow
-    		$state = mt_rand();
-    		$this->client->setState($state);
-    		$session->set('state', $state);
-    		
-    		$authUrl = $this->client->createAuthUrl();
-    		$htmlBody = '<a id="authLink" href=' . $authUrl . '></a>';
-    		$htmlBody = array('return_type' => 1, 'result' => $htmlBody);
-    	}
-    	return $htmlBody;
+    	return $this->useService($session, "Service_YTApi::execGetVideoStatistics", $videoId, $this);
     }
     
     
     public function getChannelStatistics($session, $channelId)
     {
-    	if ($this->client->getAccessToken()) {
-    		try {
-    			
-    			$this->client->addScope(Google_Service_YouTube::YOUTUBE_FORCE_SSL);
-    			$response = $this->youtube->channels->listChannels('statistics', array('id' => $channelId));
-    			
-    			
-    			
-    			//$response->items[0]->id->videoId
-    			
-    			//$subtitle = getSubtitleByVideId($videoId);
-    			//$subtitle = $subtitle;
-    			$htmlBody = array('return_type' => 0,
-    					'result' => $response->items[0]->statistics);
-    			
-    		} catch (Google_Service_Exception $e) {
-    			$htmlBody = sprintf('<p>A service error occurred: <code>%s</code></p>',
-    					htmlspecialchars($e->getMessage()));
-    			Kohana::$log->add(Log::DEBUG, $e->getMessage());
-    			if($e->getCode() == 401 || $e->getCode() == 403)
-    			{
-    				$htmlBody = array('return_type' => 1, 'result' => $htmlBody);
-    			}
-    			else
-    			{
-    				$htmlBody = array('return_type' => 2, 'result' => $htmlBody);
-    			}
-    		} catch (Google_Exception $e) {
-    			$htmlBody = sprintf('<p>An client error occurred: <code>%s</code></p>',
-    					htmlspecialchars($e->getMessage()));
-    			Kohana::$log->add(Log::DEBUG, $e->getMessage());
-    			$htmlBody = array('return_type' => 2, 'result' => $htmlBody);
-    		}
-    		
-    		$session->set($this->tokenSessionKey, $this->client->getAccessToken());
-    	}
-    	if($htmlBody['return_type'] === 1)
-    	{
-    		// If the user hasn't authorized the app, initiate the OAuth flow
-    		$state = mt_rand();
-    		$this->client->setState($state);
-    		$session->set('state', $state);
-    		
-    		$authUrl = $this->client->createAuthUrl();
-    		$htmlBody = '<a id="authLink" href=' . $authUrl . '></a>';
-    		$htmlBody = array('return_type' => 1, 'result' => $htmlBody);
-    	}
-    	return $htmlBody;
+    	return $this->useService($session, "Service_YTApi::execGetChannelStatistics", $channelId, $this);
     }
     
     public function getLastChannelsVideo($session, $channelId)
     {
-    	//Check to ensure that the access token was successfully acquired.
-    	if ($this->client->getAccessToken()) {
-    		try {
-    			$this->client->addScope(Google_Service_YouTube::YOUTUBE_FORCE_SSL);
-    			/*
-    			 * Before channel shelves will appear on your channel's web page, browse
-    			 * view needs to be enabled. If you know that your channel already has
-    			 * it enabled, or if you want to add a number of sections before enabling it,
-    			 * you can skip the call to enable_browse_view().
-    			 */
-    			
-    			// Call the YouTube Data API's channels.list method to retrieve your channel.
-    			//$listResponse = $youtube->channels->listChannels('brandingSettings', array('mine' => true));
-    			//$response = $youtube->channels->listChannels('invideoPromotion', array('id' => 'UC6zOnSAtJzz166Y5B7tImNA'));
-    			//$response = $youtube->videos->listVideos('contentDetails', array('id' => 'MHjrim3TdVE'));
-    			$videoIds = array();
-    			$pageToken = '';
-    			
-    			$response = $this->youtube->search->listSearch('snippet', array('maxResults' => 1,
-    					'channelId' => $channelId,
-    					'order' => 'date'
-    			));
-    			
-    			foreach($response->items as $item)
-    			{
-    				array_push($videoIds, $item->id->videoId);
-    			}
-    			
-    			
-    			
-    			//$response->items[0]->id->videoId
-    			
-    			//$subtitle = getSubtitleByVideId($videoId);
-    			//$subtitle = $subtitle;
-    			$htmlBody = array('return_type' => 0, 'result' => $videoIds);
-    			
-    		} catch (Google_Service_Exception $e) {
-    			$htmlBody = sprintf('<p>A service error occurred: <code>%s</code></p>',
-    					htmlspecialchars($e->getMessage()));
-    			Kohana::$log->add(Log::DEBUG, $e->getMessage());
-    			if($e->getCode() == 401 || $e->getCode() == 403)
-    			{
-    				$htmlBody = array('return_type' => 1, 'result' => $htmlBody);
-    			}
-    			else
-    			{
-    				$htmlBody = array('return_type' => 2, 'result' => $htmlBody);
-    			}
-    		} catch (Google_Exception $e) {
-    			$htmlBody = sprintf('<p>An client error occurred: <code>%s</code></p>',
-    					htmlspecialchars($e->getMessage()));
-    			Kohana::$log->add(Log::DEBUG, $e->getMessage());
-    			$htmlBody = array('return_type' => 2, 'result' => $htmlBody);
-    		}
-    		
-    		$session->set($this->tokenSessionKey, $this->client->getAccessToken());
-    	}
-    	if($htmlBody['return_type'] === 1)
-    	{
-    		// If the user hasn't authorized the app, initiate the OAuth flow
-    		$state = mt_rand();
-    		$this->client->setState($state);
-    		$session->set('state', $state);
-    		
-    		$authUrl = $this->client->createAuthUrl();
-    		$htmlBody = '<a id="authLink" href=' . $authUrl . '></a>';
-    		$htmlBody = array('return_type' => 1, 'result' => $htmlBody);
-    	}
-    	return $htmlBody;
+    	return $this->useService($session, "Service_YTApi::execGetLastChannelsVideo", $channelId, $this);
     }
 }

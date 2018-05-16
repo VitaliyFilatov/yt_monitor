@@ -122,7 +122,7 @@ function onSaveBtnClick() {
             oldValue = 0;
             saveProgress.parentElement.classList.add("display-none");
             data = JSON.parse(data);
-            if (data.type === 0) {
+            if (data.return_type === 0) {
                 alert("Субтитры для видео с id=" + data.result + "отсутствуют");
                 //enableSaveBtn();
                 enableBtn(saveBtn);

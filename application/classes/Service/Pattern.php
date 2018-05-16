@@ -9,137 +9,6 @@ class Service_Pattern
 	
 	private static $max_timeout = 10;
 	
-	private static $proxyIP = "185.158.112.209";
-	
-	private static $proxyPort = "3128";
-	
-// 	protected static function getSubtitleFromSrvice($videoId)
-// 	{
-// 		//request on getting link for download file with subtitle of video by id
-// 		$ch = curl_init();
-		
-// 		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-// 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-		
-// 		curl_setopt($ch, CURLOPT_URL, "http://www.yousubtitles.com/loadvideo/ch--" . $videoId);
-// 		//Accept-Language:ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7
-// 		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT ,0);
-// 		curl_setopt($ch, CURLOPT_TIMEOUT, 400);
-// 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-// 		curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-// 				'Accept:application/json, text/javascript, */*; q=0.01',
-// 				'Accept-Encoding:gzip',
-// 				'Accept-Language:ru-RU,ru;q=0.9',
-// 				'Connection:keep-alive',
-// 				'Content-Length:0',
-// 				'Cookie: __atuvc=11%7C19; _ym_uid=152590281312647416; __atuvs=5af6c82fa1d7c590000; _ym_visorc_40164390=w; _ym_isad=2',
-// 				'User-Agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.186 Safari/537.36'));
-// 		curl_setopt($ch, CURLOPT_POST, 1);
-		
-// 		curl_setopt($ch, CURLOPT_PROXY, Service_Pattern::$proxyIP);
-// 		curl_setopt($ch, CURLOPT_PROXYPORT, Service_Pattern::$proxyPort);
-		
-// 		$output = curl_exec($ch);
-// 		if($output === false)
-// 		{
-// 			$err = curl_error($ch);
-// 			$errno = curl_errno($ch);
-// 			return array('type'=>0, 'result'=>0);
-// 		}
-// 		curl_close($ch);
-// 		try
-// 		{
-// 			$output = gzdecode($output);
-// 		}
-// 		catch(Exception $e)
-// 		{
-// 			return array('type'=>0, 'result'=>0);
-// 		}
-// 		$response = json_decode($output);
-// 		//'load' is field from json
-// 		$downloadlink = $response->{'links'};
-// 		//6 it is length string 'href="'
-// 		$downloadlink = substr($downloadlink,
-// 				strpos($downloadlink, '<a href=') + 10,
-// 				strpos($downloadlink, '"', strpos($downloadlink, '<a href=') + 10) - strpos($downloadlink, '<a href=') - 10);
-		
-// 		$downloadlink = substr_replace($downloadlink,
-// 				"ru",
-// 				strpos($downloadlink, 'lang%3D') + 7,
-// 				strpos($downloadlink, '&title')  - strpos($downloadlink, 'lang%3D') - 7);
-		
-// 		$downloadlink = 'http://www.yousubtitles.com/' . $downloadlink;
-		
-// 		//request on getting file with subtitle by link
-// 		$ch = curl_init();
-		
-// 		curl_setopt($ch, CURLOPT_URL, $downloadlink);
-		
-// 		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-// 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-		
-// 		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT ,0);
-// 		curl_setopt($ch, CURLOPT_TIMEOUT, 400);
-		
-// 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-// 		curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-// 				'Accept:application/json, text/javascript, */*; q=0.01',
-// 				'Accept-Encoding:gzip',
-// 				'Accept-Language:ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
-// 				'Connection:keep-alive',
-// 				'Content-Length:0',
-// 				'Cookie: __atuvc=11%7C19; _ym_uid=152590281312647416; __atuvs=5af6c82fa1d7c590000; _ym_visorc_40164390=w; _ym_isad=2',
-// 				'User-Agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.186 Safari/537.36'));
-// 		curl_setopt($ch, CURLOPT_PROXY, Service_Pattern::$proxyIP);
-// 		curl_setopt($ch, CURLOPT_PROXYPORT, Service_Pattern::$proxyPort);
-		
-// 		$output = curl_exec($ch);
-// 		curl_close($ch);
-// 		if(empty($output))
-// 		{
-// 			$downloadlink= substr_replace($downloadlink,"kind%3Dasr%26",strpos($downloadlink, 'expire%26')+9,0);
-// 			$ch = curl_init();
-			
-// 			curl_setopt($ch, CURLOPT_URL, $downloadlink);
-			
-// 			curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-// 			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-			
-// 			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT ,0);
-// 			curl_setopt($ch, CURLOPT_TIMEOUT, 400);
-			
-// 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-// 			curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-// 					'Accept:application/json, text/javascript, */*; q=0.01',
-// 					'Accept-Encoding:gzip',
-// 					'Accept-Language:ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
-// 					'Connection:keep-alive',
-// 					'Content-Length:0',
-// 					'Cookie: __atuvc=11%7C19; _ym_uid=152590281312647416; __atuvs=5af6c82fa1d7c590000; _ym_visorc_40164390=w; _ym_isad=2',
-// 					'User-Agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.186 Safari/537.36'));
-			
-// 			curl_setopt($ch, CURLOPT_PROXY, Service_Pattern::$proxyIP);
-// 			curl_setopt($ch, CURLOPT_PROXYPORT, Service_Pattern::$proxyPort);
-			
-// 			$output = curl_exec($ch);
-// 			curl_close($ch);
-// 		}
-// 		try
-// 		{
-// 			$output = gzdecode($output);
-// 		}
-// 		catch(Exception $e)
-// 		{
-// 			return array('type'=>0, 'result'=>0);
-// 		}
-// 		$filename = "C:\\Server\\data\\htdocs\\yt_monitor\\application\\subtle_files\\" .
-// 				$videoId . ".txt";
-		
-// 		$file = fopen($filename, "a");
-// 		fclose($file);
-// 		file_put_contents($filename, $output);
-// 		return array('type'=>1, 'result'=>$output);
-// 	}
 
 	protected static function getSubtitleFromSrvice($videoId)
 	{
@@ -165,7 +34,7 @@ class Service_Pattern
 		{
 			$err = curl_error($ch);
 			$errno = curl_errno($ch);
-			return array('type'=>0, 'result'=>0);
+			return new Entity_ReturnResult(0,0);
 		}
 		curl_close($ch);
 		try
@@ -201,7 +70,7 @@ class Service_Pattern
 			$output = curl_exec($ch);
 			if($output === false)
 			{
-				return array('type'=>0, 'result'=>0);
+				return new Entity_ReturnResult(0, 0);
 			}
 			try 
 			{
@@ -226,35 +95,35 @@ class Service_Pattern
 					{'text'} . "\n";
 				}
 				
-				$filename = "C:\\Server\\data\\htdocs\\yt_monitor\\application\\subtle_files\\" .
+				$filename = APPPATH . "subtle_files/" .
 						$videoId . ".txt";
 						
 						$file = fopen($filename, "a");
 						fclose($file);
 						file_put_contents($filename, $subtles);
-						return array('type'=>1, 'result'=>$subtles);
+						return new Entity_ReturnResult(1, $subtles);
 			}
 			catch(Exception $e)
 			{
-				return array('type'=>0, 'result'=>0);
+				return new Entity_ReturnResult(0, 0);
 			}
 		}
 		catch(Exception $e)
 		{
-			return array('type'=>0, 'result'=>0);
+			return new Entity_ReturnResult(0, 0);
 		}
 	}
 	
 	protected static function getSubtitleByVideId($videoId)
 	{
-	    	$filename = "C:\\Server\\data\\htdocs\\yt_monitor\\application\\subtle_files\\" .
+	    	$filename = APPPATH ."subtle_files/" .
 	      	$videoId .
 	      	".txt";
 	    	if(!file_exists($filename))
 	    	{
 	    		return Service_Pattern::getSubtitleFromSrvice($videoId);
 	    	}
-	    	return array('type'=>1, 'result'=>file_get_contents($filename));
+	    	return new Entity_ReturnResult(1, file_get_contents($filename));
 	}
     
     
@@ -333,7 +202,7 @@ class Service_Pattern
             $data .= $result . $strdelimeter;
         };
         
-        $filename = "C:\\Server\\data\\htdocs\\yt_monitor\\application\\content_analyze\\" .
+        $filename = APPPATH . "content_analyze/" .
           $videoId . ".txt";
           
           $file = fopen($filename, "a");
@@ -345,7 +214,7 @@ class Service_Pattern
     
     protected static function getContentAnaliz($text, $videoId, $strdelimeter='\n', $itemdelimeter=' ')
     {
-    	$filename = "C:\\Server\\data\\htdocs\\yt_monitor\\application\\content_analyze\\" .
+    	$filename = APPPATH . "content_analyze/" .
       	$videoId .
       	".txt";
       	if(!file_exists($filename))
@@ -445,7 +314,6 @@ class Service_Pattern
     }
     
     
-    //result function - array: word => part of this word in text
     static function parseContentAnalize($text, $strdelimeter='\n', $itemdelimeter = ' ')
     {
         $words = explode($strdelimeter, $text);
@@ -460,12 +328,6 @@ class Service_Pattern
                 $sum += $items[2];
             }
         }
-        
-//         foreach ($wordsstat as $key=>$value)
-//         {
-//             $wordsstat[$key] = $value / $sum;
-//         }
-        
         return $wordsstat;
     }
     
@@ -527,32 +389,6 @@ class Service_Pattern
     }
    
     
-    function getTextSimilarity($pattern, $diff, $resCA)
-    {
-        //$dif = array();
-        $dif = 0;
-        $maxDif = 0;
-        $i = 0;
-        $freq;
-        foreach($pattern as $key=>$value)
-        {
-            if(!array_key_exists($key, $resCA))
-            {
-                $freq = 0;
-            }
-            else
-            {
-                $freq = $resCA[$key];
-            }
-            //$dif[$i] = pow($freq - $pattern[$key], 2) * $pattern[$key] * $diff[$key];
-            $dif += pow($freq - $pattern[$key], 2) * $pattern[$key] * $diff[$key];
-            $maxDif += pow($pattern[$key],3) * $diff[$key];
-            $i++;
-        }
-        
-        return 1 - $dif / $maxDif;
-    }
-    
     public static function stopAllProcess($session)
     {
     	$sessionid = $session->id();
@@ -565,7 +401,6 @@ class Service_Pattern
         $maxDif = 0;
         $i = 0;
         $freq;
-        //$pattern->words[1]["word"];
         foreach($pattern->words as $words)
         {
             if(!array_key_exists($words["word"], $resCA))
@@ -576,12 +411,6 @@ class Service_Pattern
             {
                 $freq = $resCA[$words["word"]];
             }
-            //$dif[$i] = pow($freq - $pattern[$key], 2) * $pattern[$key] * $diff[$key];
-//             $var = pow($freq - $words["frequency"], 2);
-//             $var = pow($freq - $words["frequency"], 2) * $words["frequency"];
-             //$var1 = pow($freq - $words["frequency"], 2) * $words["frequency"] * $words["dif_frequency"];
-//             $var = pow($words["frequency"],3);
-             //$var2 = pow($words["frequency"],3) * $words["dif_frequency"];
             if($freq < $words["frequency"])
             {
             	$dif += pow($freq - $words["frequency"], 2) * $words["frequency"] * $words["dif_frequency"];
@@ -596,7 +425,7 @@ class Service_Pattern
 
     public function createPattern($patternName, $videoIds, $sessionid)
     {
-        $genWords = $this->getGeneralWords("C:\\Server\\data\\htdocs\\yt_monitor\\files\\lemma.num");
+    	$genWords = $this->getGeneralWords(APPPATH . "files/lemma.num");
         $videoIdsWithSubtls = array();
         $wordsstat = array();
         $i=0;
@@ -604,11 +433,11 @@ class Service_Pattern
         {
         	$i++;
             $subtitle = $this->getSubtitleByVideId($videoId);
-            if($subtitle['type'] === 0)
+            if($subtitle->return_type === 0)
             {
-            	return array('type'=>0, 'result'=>$videoId);
+            	return new Entity_ReturnResult(0, $videoId);
             }
-            $subtitle = $subtitle['result'];
+            $subtitle = $subtitle->result;
             array_push($wordsstat, $this->parseContentAnalize($this->getContentAnaliz($subtitle, $videoId)));
             array_push($videoIdsWithSubtls, $videoId);
             Model_CreateResult::addResult($sessionid, round($i/count($videoIds)*100));
@@ -641,7 +470,7 @@ class Service_Pattern
         }
         
         $patternEntity = new Entity_Pattern($pattern->id, true);
-        return array('type'=>1, 'result'=>$patternEntity);
+        return new Entity_ReturnResult(1, $patternEntity);
     }
     
     public static function simByVideoId($videoId, $sims)
@@ -694,7 +523,7 @@ class Service_Pattern
     {
     	$videoIds = array_merge($destrVideoIds, $nondestrVideoIds);
     	$sims = Service_Pattern::analizeVideosForThreshold($videoIds, $patternid, $sessionid);
-    	$sims = $sims['result'];
+    	$sims = $sims->result;
     	$values = array();
     	foreach($sims as $sim)
     	{
@@ -735,28 +564,18 @@ class Service_Pattern
     public static function analizeVideo($videoId, $pattern)
     {
         $subtitle = Service_Pattern::getSubtitleByVideId($videoId);
-        if($subtitle['type'] == 0)
+        if($subtitle->return_type == 0)
         {
         	return "nosub";
         }
         else 
         {
-        	$subtitle = $subtitle['result'];
+        	$subtitle = $subtitle->result;
         	$resCA = Service_Pattern::getStatistics(array(Service_Pattern::parseContentAnalize(Service_Pattern::getContentAnaliz($subtitle, $videoId))));
         	return Service_Pattern::getSimilarityWithPattern($pattern, $resCA);
         }
-// 		$subtitle = "субтитры какие-то комментарии Путин";
-// 		$resCA = Service_Pattern::getStatistics(array(Service_Pattern::parseContentAnalize(Service_Pattern::getContentAnaliz($subtitle))));
-// 		return Service_Pattern::getSimilarityWithPattern($pattern, $resCA);
     }
     
-    public static function getPatternById($id)
-    {
-        $pattern = new Pattern($id);
-        $word1 = $pattern->words[0]["word"];
-        $word2 = $pattern->words[1]["word"];
-        $word1 = $word1;
-    }
     
     public static function getInfo($request, $session, $videoId, $reirect, $channelId, $sessionid)
     {
@@ -766,28 +585,28 @@ class Service_Pattern
     	{
     		$apiServicre->authorize($reirect, $request, $session);
     		$videoStatistics = $apiServicre->getVideoStatistics($session, $videoId);
-    		if($videoStatistics['return_type'] !== 0)
+    		if($videoStatistics->return_type !== 0)
     		{
     			return $videoStatistics;
     		}
-    		$videoStatistics = $videoStatistics['result'];
+    		$videoStatistics = $videoStatistics->result;
     		$channelStatistics = $apiServicre->getChannelStatistics($session, $channelId);
-    		if($channelStatistics['return_type'] !== 0)
+    		if($channelStatistics->return_type !== 0)
     		{
     			return $channelStatistics;
     		}
-    		$channelStatistics = $channelStatistics['result'];
+    		$channelStatistics = $channelStatistics->result;
     	}
     	catch(Exception $e)
     	{
-    		return array('return_type' => 2, 'result' => $e->getMessage());
+    		return new Entity_ReturnResult(2, $e->getMessage());
     	}
     	$result = Service_Pattern::sentimentComments($request, $session, $videoId, $sessionid);
-    	if($result['return_type'] == 0)
+    	if($result->return_type == 0)
     	{
     		$sumpos = 0;
     		$sumneg = 0;
-    		foreach($result['result'] as $sentiment)
+    		foreach($result->result as $sentiment)
     		{
     			if($sentiment == 1)
     			{
@@ -829,8 +648,7 @@ class Service_Pattern
     			
     	$videoInfo->positiveCount = $sumpos;
     	$videoInfo->negativeCount = $sumneg;
-    	
-    	return array('return_type' => 0, 'result' => $videoInfo);
+    	return new Entity_ReturnResult(0, $videoInfo);
     }
     
     public static function isStop($sessionid, $previoustimestamp = null)
@@ -845,7 +663,7 @@ class Service_Pattern
     			if(!Model_PauseAnalyze::isPause($sessionid))
     			{
     				Model_Result::popAllResults($sessionid);//clear result table
-    				return array('return_type' => 3, 'result' => $sessionid);
+    				return new Entity_ReturnResult(3, $sessionid);
     			}
     		}
     	}
@@ -853,9 +671,9 @@ class Service_Pattern
     	if(Model_StopAnalyze::isStop($sessionid))
     	{
     		Model_Result::popAllResults($sessionid);//clear result table
-    		return array('return_type' => 3, 'result' => $sessionid);
+    		return new Entity_ReturnResult(3, $sessionid);
     	}
-    	return array('return_type' => 0, 'result' => $previoustimestamp);
+    	return new Entity_ReturnResult(0, $previoustimestamp);
     }
     
     
@@ -866,11 +684,11 @@ class Service_Pattern
     	foreach ($videos as $key=>$video)
     	{
     		$isStop = Service_Pattern::isStop($sessionid, $previoustimestamp);
-    		if($isStop['return_type'] === 0)
+    		if($isStop->return_type === 0)
     		{
-    			$previoustimestamp = $isStop['result'];
+    			$previoustimestamp = $isStop->result;
     		}
-    		else if($isStop['return_type'] === 3)
+    		else if($isStop->return_type === 3)
     		{
     			return $isStop;
     		}
@@ -878,7 +696,7 @@ class Service_Pattern
     		{
     			$sliced = array_slice($videos, $key);
     			Model_SaveResult::addResultWithChannels($sessionid, $sliced, $patternId);
-    			return array('return_type' => 4, 'result' => $sessionid);
+    			return new Entity_ReturnResult(4, $sessionid);
     		}
     		if($video['videoId'] == null)
     		{
@@ -897,19 +715,19 @@ class Service_Pattern
     					"authorize",
     					$video['channelId'],
     					$sessionid);
-    			if($videoInfo['return_type'] == 1)
+    			if($videoInfo->return_type == 1)
     			{
     				return $videoInfo;
     			}
-    			else if($videoInfo['return_type'] == 0)
+    			else if($videoInfo->return_type== 0)
     			{
     				Model_Result::addResultWithInfo($sessionid,
     						$video['videoId'],
     						$sim,
-    						$videoInfo['result']->ERpost,
-    						$videoInfo['result']->ERbyviews,
-    						$videoInfo['result']->positiveCount,
-    						$videoInfo['result']->negativeCount);
+    						$videoInfo->result->ERpost,
+    						$videoInfo->result->ERbyviews,
+    						$videoInfo->result->positiveCount,
+    						$videoInfo->result->negativeCount);
     			}
     			else {
     				Model_Result::addResult($sessionid, $video['videoId'], $sim);
@@ -920,7 +738,7 @@ class Service_Pattern
     			Model_Result::addResult($sessionid, $video['videoId'], $sim);
     		}
     	}
-    	return array('return_type' => 0, 'result' => "true");
+    	return new Entity_ReturnResult(0, "true");
     }
     
     public static function analizeVideos($videoIds, $patternId, $sessionid, $request, $session, $channelId)
@@ -930,13 +748,13 @@ class Service_Pattern
     	{
     		if(Model_StopAnalyze::isStop($sessionid))
     		{
-    			return array('return_type' => 3, 'result' => "true");
+    			return new Entity_ReturnResult(3, "true");
     		}
     		if(Model_PauseAnalyze::isPause($sessionid))
     		{
     			$sliced = array_slice($videoIds, $key);
     			Model_SaveResult::addResult($sessionid, $sliced, $patternId);
-    			return array('return_type' => 4, 'result' => $sessionid);
+    			return new Entity_ReturnResult(4, $sessionid);
     		}
     		if($videoId == null)
     		{
@@ -950,19 +768,19 @@ class Service_Pattern
     		if($pattern->threshold <= $sim)
     		{
     			$videoInfo = Service_Pattern::getInfo($request, $session, $videoId, "authorize", $channelId, $sessionid);
-    			if($videoInfo['return_type'] == 1)
+    			if($videoInfo->return_type == 1)
     			{
     				return $videoInfo;
     			}
-    			else if($videoInfo['return_type'] == 0)
+    			else if($videoInfo->return_type == 0)
     			{
     				Model_Result::addResultWithInfo($sessionid,
     						$videoId,
     						$sim,
-    						$videoInfo['result']->ERpost,
-    						$videoInfo['result']->ERbyviews,
-    						$videoInfo['result']->positiveCount,
-    						$videoInfo['result']->negativeCount);
+    						$videoInfo->result->ERpost,
+    						$videoInfo->result->ERbyviews,
+    						$videoInfo->result->positiveCount,
+    						$videoInfo->result->negativeCount);
     			}
     			else {
     				Model_Result::addResult($sessionid, $videoId, $sim);
@@ -973,7 +791,7 @@ class Service_Pattern
     			Model_Result::addResult($sessionid, $videoId, $sim);
     		}
     	}
-    	return array('return_type' => 0, 'result' => "true");
+    	return new Entity_ReturnResult(0, "true");
     }
     
     public static function analizeVideosForThreshold($videoIds, $patternId, $sessionid)
@@ -996,7 +814,7 @@ class Service_Pattern
     		}
     		Model_CreateResult::addResult($sessionid, round(($key + 1)/count($videoIds)*100));
     	}
-    	return array('return_type' => 0, 'result' => $sims);
+    	return new Entity_ReturnResult(0, $sims);
     }
     
     public static function analizeMonitorVideos($videoIds, $patternId, $sessionid)
@@ -1005,13 +823,13 @@ class Service_Pattern
     	{
     		if(Model_StopAnalyze::isStop($sessionid))
     		{
-    			return array('return_type' => 0, 'result' => "true");
+    			return new Entity_ReturnResult(0, "true");
     		}
     		if(Model_PauseAnalyze::isPause($sessionid))
     		{
     			$sliced = array_slice($videoIds, $key);
     			Model_SaveResult::addResult($sessionid, $sliced, $patternId);
-    			return array('return_type' => 0, 'result' => $sessionid);
+    			return new Entity_ReturnResult(0, $sessionid);
     		}
     		if($videoId == null)
     		{
@@ -1024,7 +842,7 @@ class Service_Pattern
     		}
     		Model_MonitorResult::addResult($sessionid, $videoId, $sim);
     	}
-    	return array('return_type' => 0, 'result' => "true");
+    	return new Entity_ReturnResult(0, "true");
     }
     
     public static function analizeChannels($request, $session, $channelIds, $patternId, $sessionid)
@@ -1038,13 +856,13 @@ class Service_Pattern
     		foreach($channelIds as $channelId)
     		{
     			$htmlBody = $apiServicre->getChannelsVideo($session, $channelId);
-    			if($htmlBody['return_type'] !== 0)
+    			if($htmlBody->return_type !== 0)
     			{
     				return $htmlBody;
     			}
     			else 
     			{
-    				foreach($htmlBody['result'] as $videoId)
+    				foreach($htmlBody->result as $videoId)
     				{
     					array_push($videos, array('videoId'=>$videoId, 'channelId'=>$channelId));
     				}
@@ -1054,33 +872,11 @@ class Service_Pattern
     	}
     	catch(Exception $e)
     	{
-    		return array('return_type' => 2, 'result' => $e->getMessage());
+    		return new Entity_ReturnResult(2, $e->getMessage());
     	}
     }
     
-    
-    public static function analizeChannel($request, $session, $channelId, $patternId, $sessionid)
-    {
-        $apiServicre = new Service_YTApi('1067254332521-4o8abvtsaj2sihjbj82qfa17j1vg8l6r.apps.googleusercontent.com',
-            'oMbF7Zj1K9cCVXw3ZVGFN5z-');
-        try
-        {
-            $apiServicre->authorize("authorize", $request, $session);
-            $htmlBody = $apiServicre->getChannelsVideo($session, $channelId);
-            if($htmlBody['return_type'] !== 0)
-            {
-                return $htmlBody;
-            }
-            else 
-            {
-            	return Service_Pattern::analizeVideos($htmlBody['result'], $patternId, $sessionid, $request, $session, $channelId);
-            }
-        }
-        catch(Exception $e)
-        {
-        	return array('return_type' => 2, 'result' => $e->getMessage());
-        }
-    }
+
     
     public static function checkLastVideos($request, $session, $channelIds, $patternId, $sessionid, $lastVideoId)
     {
@@ -1093,30 +889,29 @@ class Service_Pattern
     		foreach($channelIds as $channelId)
     		{
     			$htmlBody = $apiServicre->getLastChannelsVideo($session, $channelId);
-    			if($htmlBody['return_type'] !== 0)
+    			if($htmlBody->return_type !== 0)
     			{
     				return $htmlBody;
     			}
     			else 
     			{
-    				if($htmlBody['result'][0] == $lastVideoId)
+    				if($htmlBody->result[0] == $lastVideoId)
     				{
-    					return array('return_type' => 0, 'result' => null);
+    					return new Entity_ReturnResult(0, null);
     				}
-    				$videoIds = array_merge($videoIds, $htmlBody['result']);
+    				$videoIds = array_merge($videoIds, $htmlBody->result);
     			}
     		}
     		if(!empty($videoIds))
     		{
     			Service_Pattern::analizeMonitorVideos($videoIds, $patternId, $sessionid);
-    			return array('return_type' => 0,
-    					'result' => Model_MonitorResult::popAllResults($sessionid));
+    			return new Entity_ReturnResult(0, Model_MonitorResult::popAllResults($sessionid));
     		}
-    		return array('return_type' => 0, 'result' => null);
+    		return new Entity_ReturnResult(0, null);
     	}
     	catch(Exception $e)
     	{
-    		return array('return_type' => 2, 'result' => $e->getMessage());
+    		return new Entity_ReturnResult(2, $e->getMessage());
     	}
     }
     
@@ -1133,25 +928,25 @@ class Service_Pattern
     		if(empty($comments))
     		{
     			$htmlBody = $apiServicre->getVideoComment($session, $videoId);
-    			if($htmlBody['return_type'] !== 0)
+    			if($htmlBody->return_type !== 0)
     			{
     				return $htmlBody;
     			}
-    			Model_VideoComment::addComments($videoId, $htmlBody['result']);
+    			Model_VideoComment::addComments($videoId, $htmlBody->result);
     		}
     		else 
     		{
-    			$htmlBody = array('return_type'=>0, 'result'=>$comments);
+    			$htmlBody = new Entity_ReturnResult(0, $comments);
     		}
     		$sentiment = array();
-    		foreach($htmlBody['result'] as $i=>$comment)
+    		foreach($htmlBody->result as $i=>$comment)
     		{
     			if($i>=100)
     			{
     				break;
     			}
     			$isStop = Service_Pattern::isStop($sessionid);
-    			if($isStop['return_type'] === 3)
+    			if($isStop->return_type === 3)
     			{
     				return $isStop;
     			}
@@ -1194,18 +989,16 @@ class Service_Pattern
     				array_push($sentiment,0);
     			}
     		}
-    		return array('return_type' => 0, 'result' => $sentiment);
+    		return new Entity_ReturnResult(0, $sentiment);
     	}
     	catch(Exception $e)
     	{
-    		return array('return_type' => 2, 'result' => $e->getMessage());
+    		return new Entity_ReturnResult(2, $e->getMessage());
     	}
     }
     
     public static function prepareBagOfWords($request, $session)
     {
-//     	$file = file(trim("C:\\Users\\user\\Downloads\\negative.txt"));
-//     	$text = implode(" ", $file);
     	$apiServicre = new Service_YTApi('1067254332521-4o8abvtsaj2sihjbj82qfa17j1vg8l6r.apps.googleusercontent.com',
     			'oMbF7Zj1K9cCVXw3ZVGFN5z-');
     	
@@ -1214,13 +1007,13 @@ class Service_Pattern
     		$apiServicre->authorize("authorize", $request, $session);
     		$htmlBody = $apiServicre->getVideoComment($session, "JkUGDu2HNv0");
     		$sentiment = array();
-    		if($htmlBody['return_type'] !== 0)
+    		if($htmlBody->return_type !== 0)
     		{
     			return $htmlBody;
     		}
     		else
     		{
-    			foreach($htmlBody['result'] as $i=>$comment)
+    			foreach($htmlBody->result as $i=>$comment)
     			{
     				if($i>=100)
     				{
@@ -1253,11 +1046,11 @@ class Service_Pattern
     				}
     			}
     		}
-    		return array('return_type' => 0, 'result' => null);
+    		return new Entity_ReturnResult(0, null);
     	}
     	catch(Exception $e)
     	{
-    		return array('return_type' => 2, 'result' => $e->getMessage());
+    		return new Entity_ReturnResult(2, $e->getMessage());
     	}
     }
     
