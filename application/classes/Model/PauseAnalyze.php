@@ -31,6 +31,24 @@ class Model_PauseAnalyze extends Model_Base
 		$query->execute();
 	}
 	
+// 	public static function init($sessionid)
+// 	{
+// 		$sql = "DELETE FROM `yt_monitor`.`pauseanalyze`
+// 				WHERE `sessionid` rlike(:sessiontoken);";
+// 		$query = DB::query(Database::DELETE, $sql);
+// 		$sessiontoken = substr($sessionid, 0, 26);
+// 		$query->param(':sessiontoken', $sessiontoken);
+// 		$query->execute();
+		
+		
+// 		$sql = "INSERT INTO `yt_monitor`.`pauseanalyze`
+// 					(`sessionid`, `pause`) VALUES (:sessionid, false);";
+// 		$query = DB::query(Database::DELETE, $sql);
+// 		$query->param(':sessionid', $sessionid);
+// 		$query->execute();
+		
+// 	}
+	
 	public static function pause($sessionid)
 	{
 		$sql = "UPDATE `yt_monitor`.`pauseanalyze`

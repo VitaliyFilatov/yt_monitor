@@ -8,7 +8,7 @@
                 </div>
             </div>
         <div class="card-body">
-            <div class="pre-scrollable">
+            <div id="scrollPattern" class="pre-scrollable">
                 <div class="container">
                     <ul id="patternList" class="list-group" style="color:#294a70;">
 

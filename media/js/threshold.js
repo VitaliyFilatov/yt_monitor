@@ -65,8 +65,14 @@ function enableSaveBtn()
 
 function onSaveBtnClick()
 {
+    this.blur();
     if(inProcess)
     {
+        return;
+    }
+    if(destrVideoIdsInput.value == "" || nondestrVideoIdsInput.value == "")
+    {
+        alert("Введите id видео через запятую");
         return;
     }
     disableSaveBtn();

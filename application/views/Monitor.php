@@ -4,6 +4,7 @@
         <h2>Список каналов для мониторинга</h2>
 
         <div class="card" style="color:#294a70;">
+            <?php echo $channelPanelHeader; ?>
             <?php echo $channelPanelBody; ?>
             <div class="card-footer">
                 <button id="addChanelBtn" type="button" class="btn btn-outline-primary btn-outline-darkblue btn-block">Добавить канал</button>

@@ -15,6 +15,7 @@ var infoDone = $("#infoDone")[0];
 var continueBtn = $("#continueBtn")[0];
 var startAgainBtn = $("#startAgainBtn")[0];
 var editParametersBtn = $("#editParametersBtn")[0];
+var reload = $("#reload")[0];
 
 var monitorStep=15000;
 
@@ -22,11 +23,6 @@ var monitorStep=15000;
 var lastVideoId = "";
 
 var subAnalyze;
-
-function getSessionId()
-{
-    return $("#sessionid")[0].innerHTML;
-}
 
 
 function monitorChannels(channelIds, patternId, sessionId, lastVideoId)
@@ -147,25 +143,11 @@ function onStartMonitorBtnClick()
 
 function onStopAnalyzeBtnClick()
 {
-//    pauseAnalyzeBtn.classList.add("display-none");
-//    startAgainBtn.classList.remove("display-none");
     continueBtn.classList.remove("display-none");
     stopAnalyzeBtn.classList.add("display-none");
     infoWork.classList.add("display-none");
     infoDone.classList.remove("display-none");
-    var sessionid = getSessionId()
-    $.ajax({
-        url: "stopAnalyze?XDEBUG_SESSION_START=ECLIPSE_DBGP",
-        type: "POST",
-        data: {sessionid : sessionid},
-        error: function(jqXHR, textStatus, errorThrown )
-        {
-            console.log("error: " + errorThrown);
-        },
-        success: function(data, textStatus, jqXHR )
-        {
-        }
-    });
+    stopProcess();
 }
 
 function onPauseAnalyzeBtnClick()

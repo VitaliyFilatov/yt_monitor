@@ -35,7 +35,7 @@
                   <h3 class="masthead-brand"><img src="media/logo-2.png" width="40" />  YTMonitor</h3>
                   <nav class="nav nav-masthead justify-content-center">
                       <?php foreach($links as $link): ?>
-                        <a id="<?php echo $link['id'] ?>" class="nav-link <?php echo $link['active'] ?>" href="<?php echo $link['href'] ?>"><?php echo $link['text'] ?></a>
+                        <a id="<?php echo $link['id'] ?>" class="nav-link <?php echo $link['active'] ?> custom-link" href="<?php echo $link['href'] ?>"><?php echo $link['text'] ?></a>
                       <?php endforeach; ?>
                   </nav>
               </div>
@@ -58,6 +58,7 @@
       <script src="media/js/popper.js"></script>
       <script src="media/js/bootstrap.min.js"></script>
       <script src="media/js/bootstrup-confirmation.js"></script>
+      <script src="media/js/main.js"></script>
       <?php foreach($scripts as $script): ?>
         <script src="<?php echo $script ?>"></script>
       <?php endforeach; ?>

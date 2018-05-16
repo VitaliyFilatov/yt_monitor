@@ -87,6 +87,7 @@ class Controller_API extends Controller {
 	{
 		$body = $this->request->post();
 		$sessionid = $body['sessionid'];
+		Model_LastGetResultAnalyze::updateTimestamp($sessionid);
 		echo json_encode(Model_Result::popAllResults($sessionid));
 	}
 	
@@ -103,18 +104,29 @@ class Controller_API extends Controller {
 		
 		Model_StopAnalyze::init($sessionid);
 		Model_PauseAnalyze::init($sessionid);
+		Model_SaveResult::init($sessionid);
+		Model_LastGetResultAnalyze::init($sessionid);
+		//Model_Result::popAllResults($sessionid);
+		Model_Result::init($sessionid);
 		
-		
-		foreach($channelIds as $channelId)
+		$result = Service_Pattern::analizeChannels($request, $session, $channelIds, $patternId, $sessionid);
+		if($result['return_type'] !== 0)
 		{
-			$result = Service_Pattern::analizeChannel($request, $session, $channelId, $patternId, $sessionid);
-			if($result['return_type'] !== 0)
-			{
-				echo json_encode($result);
-				return;
-			}
+			echo json_encode($result);
+			return;
 		}
 		echo json_encode(array('return_type' => 0, 'result' => Model_Result::popAllResults($sessionid)));
+		
+// 		foreach($channelIds as $channelId)
+// 		{
+// 			$result = Service_Pattern::analizeChannel($request, $session, $channelId, $patternId, $sessionid);
+// 			if($result['return_type'] !== 0)
+// 			{
+// 				echo json_encode($result);
+// 				return;
+// 			}
+// 		}
+// 		echo json_encode(array('return_type' => 0, 'result' => Model_Result::popAllResults($sessionid)));
 	}
 	
 	public function action_continueAnalyze()
@@ -127,21 +139,22 @@ class Controller_API extends Controller {
 		$sessionid = $body['sessionid'];
 		
 		$saved = Model_SaveResult::popAllResults($sessionid);
+		Model_LastGetResultAnalyze::updateTimestamp($sessionid);
 		
 		if(empty($saved))
 		{
 			echo json_encode(array('return_type' => 0, 'result' => "false"));
 			return;
 		}
-		$videoIds = array();
+		$videos = array();
 		foreach($saved as $res)
 		{
-			array_push($videoIds, $res['videoid']);
+			array_push($videos, array('videoId'=>$res['videoid'], 'channelId'=>$res['channelid']));
 		}
 		$patternId = $saved[0]['patternid'];
 		Model_PauseAnalyze::init($sessionid);
 		Model_StopAnalyze::init($sessionid);
-		$result = Service_Pattern::analizeVideos($videoIds, $patternId, $sessionid);
+		$result = Service_Pattern::analizeVideosWithChannels($videos, $patternId, $sessionid, $request, $session);
 		
 		if($result['return_type'] !== 0)
 		{
@@ -157,6 +170,11 @@ class Controller_API extends Controller {
 		$sessionid = $body['sessionid'];
 		
 		Model_StopAnalyze::stop($sessionid);
+	}
+	
+	public function action_stopAllProcess()
+	{
+		Service_Pattern::stopAllProcess(Session::instance());
 	}
 	
 	public function action_pauseAnalyze()
@@ -240,7 +258,9 @@ class Controller_API extends Controller {
 	
 	public function action_getContent()
 	{
-		echo Service_Pattern::prepareBagOfWords();
+		$request = $this->request;
+		$session = Session::instance();
+		echo json_encode(Service_Pattern::prepareBagOfWords($request, $session));
 	}
 
 } // End API

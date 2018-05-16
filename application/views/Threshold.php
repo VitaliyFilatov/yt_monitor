@@ -36,8 +36,10 @@
                         </div>
                     </div>
                     <div class="col">
-                        <button id="cancelBtn" type="button" class="btn btn-outline-primary btn-outline-darkblue" data-toggle="confirmation" data-btn-ok-label="Вернуться" data-btn-ok-class="btn-success" data-btn-cancel-label="Продолжить" data-btn-cancel-class="btn-danger" data-title="Подтверждение отмены" data-content="Это может привести к потере данных">Отменить</button>
-                        <button id="saveBtn" type="button" class="btn btn-outline-primary btn-outline-darkblue">Сохранить</button>
+                        <div class="btn-group" style="float:right;">
+                            <button id="cancelBtn" type="button" class="btn btn-outline-primary btn-outline-darkblue" data-toggle="confirmation" data-btn-ok-label="Вернуться" data-btn-ok-class="btn-success" data-btn-cancel-label="Продолжить" data-btn-cancel-class="btn-danger" data-title="Подтверждение отмены" data-content="Это может привести к потере данных">Отменить</button>
+                            <button id="saveBtn" type="button" class="btn btn-outline-primary btn-outline-darkblue">Сохранить</button>
+                        </div>
                     </div>
                 </div>
             </div>

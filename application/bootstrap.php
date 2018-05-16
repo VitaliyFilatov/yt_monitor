@@ -268,6 +268,12 @@ Route::set('getContent', '(getContent(/<id>))')
 			'controller' => 'api',
 			'action'     => 'getContent',
 	));
+
+Route::set('stopAllProcess', '(stopAllProcess(/<id>))')
+	->defaults(array(
+			'controller' => 'api',
+			'action'     => 'stopAllProcess',
+	));
 	
 	
 	

@@ -4,11 +4,14 @@
         <h2>Список каналов для анализа</h2>
 
         <div class="card" style="color:#294a70;">
+            <?php echo $channelPanelHeader; ?>
             <?php echo $channelPanelBody; ?>
             <div class="card-footer">
                 <button id="addChanelBtn" type="button" class="btn btn-outline-primary btn-outline-darkblue btn-block">Добавить канал</button>
+                <button id="cancelAddChanelBtn" type="button" class="btn btn-outline-primary btn-outline-darkblue btn-block display-none">Отменить</button>
                 <button id="startAnalyzeBtn" type="button" class="btn btn-outline-primary btn-outline-darkblue btn-block">Анализ каналов</button>
-                <button id="editParametersBtn" type="button" class="btn btn-outline-primary btn-outline-darkblue btn-block display-none">Вернуться к редактированию</button>
+                <button id="editParametersBtn" type="button" class="btn btn-outline-primary btn-outline-darkblue btn-block display-none" style="
+    margin-top: 0px;">Вернуться к редактированию</button>
             </div>
         </div>
     </div>

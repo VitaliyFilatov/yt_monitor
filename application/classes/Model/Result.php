@@ -6,12 +6,22 @@ class Model_Result extends Model_Base
 	
 	protected static $model = 'Result';
 	
+// 	public static function init($sessionid)
+// 	{
+// 		$sql = "DELETE FROM `yt_monitor`.`result`
+// 				WHERE `sessionid`=:sessionid";
+// 		$query = DB::query(Database::DELETE, $sql);
+// 		$query->param(':sessionid', $sessionid);
+// 		$query->execute();
+// 	}
+
 	public static function init($sessionid)
 	{
 		$sql = "DELETE FROM `yt_monitor`.`result`
-				WHERE `sessionid`=:sessionid";
+				WHERE `sessionid` rlike(:sessiontoken);";
 		$query = DB::query(Database::DELETE, $sql);
-		$query->param(':sessionid', $sessionid);
+		$sessiontoken = substr($sessionid, 0, 26);
+		$query->param(':sessiontoken', $sessiontoken);
 		$query->execute();
 	}
 	
@@ -24,6 +34,22 @@ class Model_Result extends Model_Base
 		$query->param(':sessionid', $sessionid);
 		$query->param(':videoid', $videoid);
 		$query->param(':sim', $sim);
+		$query->execute();
+	}
+	
+	public static function addResultWithInfo($sessionid, $videoid, $sim, $erpost, $erbyviews, $positiveCount, $negativeCount)
+	{
+		$sql = "INSERT INTO `yt_monitor`.`result`
+				(`sessionid`, `videoid`, `sim`, `erpost`, `erbyviews`, `positive_count`,`negative_count`)
+				VALUES(:sessionid, :videoid, :sim, :erpost, :erbyviews, :positive, :negative)";
+		$query = DB::query(Database::INSERT, $sql);
+		$query->param(':sessionid', $sessionid);
+		$query->param(':videoid', $videoid);
+		$query->param(':sim', $sim);
+		$query->param(':erpost', $erpost);
+		$query->param(':erbyviews', $erbyviews);
+		$query->param(':positive', $positiveCount);
+		$query->param(':negative', $negativeCount);
 		$query->execute();
 	}
 	

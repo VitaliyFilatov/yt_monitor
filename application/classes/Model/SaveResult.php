@@ -6,12 +6,22 @@ class Model_SaveResult extends Model_Base
 	
 	protected static $model = 'SaveResult';
 	
+// 	public static function init($sessionid)
+// 	{
+// 		$sql = "DELETE FROM `yt_monitor`.`saveresult`
+// 				WHERE `sessionid`=:sessionid";
+// 		$query = DB::query(Database::DELETE, $sql);
+// 		$query->param(':sessionid', $sessionid);
+// 		$query->execute();
+// 	}
+
 	public static function init($sessionid)
 	{
 		$sql = "DELETE FROM `yt_monitor`.`saveresult`
-				WHERE `sessionid`=:sessionid";
+				WHERE `sessionid` rlike(:sessiontoken);";
 		$query = DB::query(Database::DELETE, $sql);
-		$query->param(':sessionid', $sessionid);
+		$sessiontoken = substr($sessionid, 0, 26);
+		$query->param(':sessiontoken', $sessiontoken);
 		$query->execute();
 	}
 	
@@ -30,6 +40,39 @@ class Model_SaveResult extends Model_Base
 				$sql = $sql . "('" . $sessionid . "', '" . $videoid . "', " . $patternId . ")";
 			}
 			if($key != count($videoids) - 1)
+			{
+				$sql = $sql . ",";
+			}
+			else
+			{
+				$sql = $sql . ";";
+			}
+		}
+		$query = DB::query(Database::INSERT, $sql);
+		$query->execute();
+	}
+	
+	public static function addResultWithChannels($sessionid, $videos, $patternId)
+	{
+		$sql = "INSERT INTO `yt_monitor`.`saveresult`
+				(`sessionid`, `videoid`, `patternid`, `channelid`) ";
+		foreach($videos as $key=>$video)
+		{
+			if($key == 0)
+			{
+				$sql = $sql . "VALUES "; 
+			}
+			$sql = $sql .
+			"('" .
+			$sessionid .
+			"', '" .
+			$video['videoId'] .
+			"', " .
+			$patternId .
+			", '" .
+			$video['channelId'].
+			"')";
+			if($key != count($videos) - 1)
 			{
 				$sql = $sql . ",";
 			}

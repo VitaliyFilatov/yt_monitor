@@ -42,6 +42,7 @@ class Controller_Welcome extends Controller_Template {
 		$data = Session::instance()->id() . $date->getTimestamp();
 		$patternPanel = View::factory('PatternPanel');
 		$channelPanelBody = View::factory('channelPanelBody');
+		$channelPanelHeader= View::factory('channelPanelHeader');
 		$resultBody = View::factory('ResultBody');
 		$resultHeader = View::factory('ResultHeader');
 		$content = View::factory('Analyze');
@@ -49,6 +50,7 @@ class Controller_Welcome extends Controller_Template {
 		$content->channelPanelBody= $channelPanelBody;
 		$content->resultBody = $resultBody;
 		$content->resultHeader = $resultHeader;
+		$content->channelPanelHeader = $channelPanelHeader;
 		$this->links[1]['id'] = 'reload';
 		$this->links[1]['active'] = 'active';
 		$this->template->sessionid = $data;
@@ -67,6 +69,7 @@ class Controller_Welcome extends Controller_Template {
 		$data = Session::instance()->id() . $date->getTimestamp();
 		$patternPanel = View::factory('PatternPanel');
 		$channelPanelBody = View::factory('channelPanelBody');
+		$channelPanelHeader= View::factory('channelPanelHeader');
 		$resultBody = View::factory('ResultBody');
 		$resultHeader = View::factory('ResultHeader');
 		$content = View::factory('Monitor');
@@ -74,6 +77,7 @@ class Controller_Welcome extends Controller_Template {
 		$content->channelPanelBody= $channelPanelBody;
 		$content->resultBody = $resultBody;
 		$content->resultHeader = $resultHeader;
+		$content->channelPanelHeader = $channelPanelHeader;
 		$this->links[2]['id'] = 'reload';
 		$this->links[2]['active'] = 'active';
 		$this->template->sessionid = $data;
@@ -104,5 +108,6 @@ class Controller_Welcome extends Controller_Template {
 				"media/js/threshold.js"
 		);
 	}
+	
 
 } // End Welcome

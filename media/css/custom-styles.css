@@ -77,6 +77,13 @@
     font-size:1.7em;
 }
 
+.btn-collapse {
+    padding-left: 0px;
+    padding-right: 0px;
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
 .text-middle-50 {
     vertical-align: middle;
     line-height: 50px;
