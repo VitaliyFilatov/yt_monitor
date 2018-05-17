@@ -41,8 +41,8 @@ class Controller_Welcome extends Controller_Template {
 		$date = new DateTime();
 		$data = Session::instance()->id() . $date->getTimestamp();
 		$patternPanel = View::factory('PatternPanel');
-		$channelPanelBody = View::factory('channelPanelBody');
-		$channelPanelHeader= View::factory('channelPanelHeader');
+		$channelPanelBody = View::factory('ChannelPanelBody');
+		$channelPanelHeader= View::factory('ChannelPanelHeader');
 		$resultBody = View::factory('ResultBody');
 		$resultHeader = View::factory('ResultHeader');
 		$content = View::factory('Analyze');
@@ -68,8 +68,8 @@ class Controller_Welcome extends Controller_Template {
 		$date = new DateTime();
 		$data = Session::instance()->id() . $date->getTimestamp();
 		$patternPanel = View::factory('PatternPanel');
-		$channelPanelBody = View::factory('channelPanelBody');
-		$channelPanelHeader= View::factory('channelPanelHeader');
+		$channelPanelBody = View::factory('ChannelPanelBody');
+		$channelPanelHeader= View::factory('ChannelPanelHeader');
 		$resultBody = View::factory('ResultBody');
 		$resultHeader = View::factory('ResultHeader');
 		$content = View::factory('Monitor');

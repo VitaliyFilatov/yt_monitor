@@ -150,128 +150,128 @@ Cookie::$salt = "salt";
 
 Route::set('default', '(index(/<id>))')
 	->defaults(array(
-		'controller' => 'welcome',
+		'controller' => 'Welcome',
 		'action'     => 'index',
 	));
 	
 Route::set('create_pattern', '(createPattern(/<id>))')
 	->defaults(array(
-			'controller' => 'api',
+			'controller' => 'API',
 			'action'     => 'createPattern',
 	));
 		
 Route::set('analyzeChannel', '(analyzeChannel(/<id>))')
 	->defaults(array(
-	    'controller' => 'api',
+	    'controller' => 'API',
 	    'action'     => 'analyzeChannel',
 	));
 
 	
 Route::set('deletePattern', '(deletePattern(/<id>))')
 	->defaults(array(
-	    'controller' => 'api',
+	    'controller' => 'API',
 	    'action'     => 'deletePattern',
 	));
 	
 Route::set('getPatternById', '(getPatternById(/<id>))')
 	->defaults(array(
-	    'controller' => 'api',
+	    'controller' => 'API',
 	    'action'     => 'getPatternById',
 	));
 	
 Route::set('getAllPatterns', '(getAllPatterns(/<id>))')
 	->defaults(array(
-			'controller' => 'api',
+			'controller' => 'API',
 			'action'     => 'getAllPatterns',
 	));
 
 Route::set('getSubResult', '(getSubResult(/<id>))')
 	->defaults(array(
-			'controller' => 'api',
+			'controller' => 'API',
 			'action'     => 'getSubResult',
 	));
 	
 Route::set('analyze', '(analyze(/<id>))')
 	->defaults(array(
-			'controller' => 'welcome',
+			'controller' => 'Welcome',
 			'action'     => 'analyze',
 	));
 	
 Route::set('threshold', '(threshold(/<id>))')
 	->defaults(array(
-			'controller' => 'welcome',
+			'controller' => 'Welcome',
 			'action'     => 'threshold',
 	));
 
 Route::set('authorize', '(authorize(/<id>))')
 	->defaults(array(
-			'controller' => 'api',
+			'controller' => 'API',
 			'action'     => 'authorize',
 	));
 	
 Route::set('getSubResultResAnalyze', '(getSubResultResAnalyze(/<id>))')
 	->defaults(array(
-			'controller' => 'api',
+			'controller' => 'API',
 			'action'     => 'getSubResultResAnalyze',
 	));
 	
 Route::set('analyzeChannels', '(analyzeChannels(/<id>))')
 	->defaults(array(
-			'controller' => 'api',
+			'controller' => 'API',
 			'action'     => 'analyzeChannels',
 	));
 	
 Route::set('stopAnalyze', '(stopAnalyze(/<id>))')
 	->defaults(array(
-			'controller' => 'api',
+			'controller' => 'API',
 			'action'     => 'stopAnalyze',
 	));
 	
 Route::set('pauseAnalyze', '(pauseAnalyze(/<id>))')
 	->defaults(array(
-			'controller' => 'api',
+			'controller' => 'API',
 			'action'     => 'pauseAnalyze',
 	));
 	
 Route::set('continueAnalyze', '(continueAnalyze(/<id>))')
 	->defaults(array(
-			'controller' => 'api',
+			'controller' => 'API',
 			'action'     => 'continueAnalyze',
 	));
 	
 Route::set('checkLastVideos', '(checkLastVideos(/<id>))')
 	->defaults(array(
-			'controller' => 'api',
+			'controller' => 'API',
 			'action'     => 'checkLastVideos',
 	));
 	
 Route::set('monitor', '(monitor(/<id>))')
 	->defaults(array(
-			'controller' => 'welcome',
+			'controller' => 'Welcome',
 			'action'     => 'monitor',
 	));
 	
 Route::set('authorizeMonitor', '(authorizeMonitor(/<id>))')
 	->defaults(array(
-			'controller' => 'api',
+			'controller' => 'API',
 			'action'     => 'authorizeMonitor',
 	));
 	
 Route::set('calcThreshold', '(calcThreshold(/<id>))')
 	->defaults(array(
-			'controller' => 'api',
+			'controller' => 'API',
 			'action'     => 'calcThreshold',
 	));
 
 Route::set('getContent', '(getContent(/<id>))')
 	->defaults(array(
-			'controller' => 'api',
+			'controller' => 'API',
 			'action'     => 'getContent',
 	));
 
 Route::set('stopAllProcess', '(stopAllProcess(/<id>))')
 	->defaults(array(
-			'controller' => 'api',
+			'controller' => 'API',
 			'action'     => 'stopAllProcess',
 	));
 	
