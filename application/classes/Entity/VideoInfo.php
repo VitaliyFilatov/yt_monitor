@@ -12,30 +12,44 @@ class Entity_VideoInfo
 	
 	
 	/**
-	 * ERpost
+	 * count of like
 	 *
-	 * @var double
+	 * @var int
 	 */
-	public $ERpost= 0;
+	public $like_count= 0;
 	
 	/**
-	 * ERbyviews
+	 * count of dislike
 	 *
-	 * @var double
+	 * @var int
 	 */
-	public $ERbyviews= 0;
+	public $dislike_count= 0;
 	
 	/**
-	 * positiveCount
+	 * count of positive comment
 	 *
-	 * @var double
+	 * @var int
 	 */
-	public $positiveCount= 0;
+	public $positive_count= 0;
 	
 	/**
-	 * negativeCount
+	 * count of negative comment
 	 *
-	 * @var double
+	 * @var int
 	 */
-	public $negativeCount= 0;
+	public $negative_count= 0;
+	
+	/**
+	 * count of views
+	 *
+	 * @var int
+	 */
+	public $view_count= 0;
+	
+	/**
+	 * count of followers
+	 *
+	 * @var int
+	 */
+	public $followers_count= 0;
 }

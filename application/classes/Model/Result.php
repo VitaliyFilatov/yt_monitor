@@ -37,19 +37,35 @@ class Model_Result extends Model_Base
 		$query->execute();
 	}
 	
-	public static function addResultWithInfo($sessionid, $videoid, $sim, $erpost, $erbyviews, $positiveCount, $negativeCount)
+	/**
+	 * 
+	 * @param Entity_VideoInfo $videoInfo
+	 */
+	public static function addResultWithInfo($sessionid, $videoid, $sim, $videoInfo)
 	{
 		$sql = "INSERT INTO `yt_monitor`.`result`
-				(`sessionid`, `videoid`, `sim`, `erpost`, `erbyviews`, `positive_count`,`negative_count`)
-				VALUES(:sessionid, :videoid, :sim, :erpost, :erbyviews, :positive, :negative)";
+				(`sessionid`,
+                `videoid`,
+                `sim`,
+                `like_count`,
+                `dislike_count`,
+                `positive_count`,
+                `negative_count`,
+                `view_count`,
+                `followers_count`)
+				VALUES(:sessionid, :videoid, :sim,
+                :likes, :dislikes, :positive,
+                :negative, :view, :followers)";
 		$query = DB::query(Database::INSERT, $sql);
 		$query->param(':sessionid', $sessionid);
 		$query->param(':videoid', $videoid);
 		$query->param(':sim', $sim);
-		$query->param(':erpost', $erpost);
-		$query->param(':erbyviews', $erbyviews);
-		$query->param(':positive', $positiveCount);
-		$query->param(':negative', $negativeCount);
+		$query->param(':likes', $videoInfo->like_count);
+		$query->param(':dislikes', $videoInfo->dislike_count);
+		$query->param(':positive', $videoInfo->positive_count);
+		$query->param(':negative', $videoInfo->like_count);
+		$query->param(':views', $videoInfo->view_count);
+		$query->param(':followers', $videoInfo->followers_count);
 		$query->execute();
 	}
 	

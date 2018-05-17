@@ -300,31 +300,12 @@ class Service_Pattern
     		return $result;
     	}
     	$videoInfo = new Entity_VideoInfo();
-    	if($videoStatistics->viewCount > 0)
-    	{
-    		$videoInfo->ERbyviews = ($videoStatistics->likeCount +
-    				$videoStatistics->commentCount +
-    				$videoStatistics->dislikeCount)/$videoStatistics->viewCount;
-    	}
-    	else
-    	{
-    		$videoInfo->ERbyviews = 0;
-    	}
-    	
-    	if($channelStatistics->subscriberCount > 0)
-    	{
-    		$videoInfo->ERpost = ($videoStatistics->likeCount +
-    				$videoStatistics->commentCount +
-    				$videoStatistics->dislikeCount)/$channelStatistics->subscriberCount;
-    	}
-    	else 
-    	{
-    		$videoInfo->ERpost = 0;
-    	}
-    	
-    			
-    	$videoInfo->positiveCount = $sumpos;
-    	$videoInfo->negativeCount = $sumneg;
+    	$videoInfo->like_count = $videoStatistics->likeCount;
+    	$videoInfo->dislike_count = $videoStatistics->dislikeCount;
+    	$videoInfo->positive_count = $sumpos;
+    	$videoInfo->negative_count = $sumneg;
+    	$videoInfo->view_count = $videoStatistics->viewCount;
+    	$videoInfo->followers_count = $channelStatistics->subscriberCount;
     	return new Entity_ReturnResult(0, $videoInfo);
     }
     
@@ -398,13 +379,11 @@ class Service_Pattern
     			}
     			else if($videoInfo->return_type== 0)
     			{
+    			    $videoInfo = $videoInfo->result;
     				Model_Result::addResultWithInfo($sessionid,
     						$video['videoId'],
     						$sim,
-    						$videoInfo->result->ERpost,
-    						$videoInfo->result->ERbyviews,
-    						$videoInfo->result->positiveCount,
-    						$videoInfo->result->negativeCount);
+    						$videoInfo);
     			}
     			else {
     				Model_Result::addResult($sessionid, $video['videoId'], $sim);
@@ -548,10 +527,10 @@ class Service_Pattern
     		$sentiment = array();
     		foreach($htmlBody->result as $i=>$comment)
     		{
-    			if($i>=100)
-    			{
-    				break;
-    			}
+//     			if($i>=100)
+//     			{
+//     				break;
+//     			}
     			$isStop = Service_Pattern::isStop($sessionid);
     			if($isStop->return_type === 3)
     			{

@@ -5,7 +5,7 @@ function getThreshold() {
     return $("#threshold" + idPatternActive.substr(2))[0].innerHTML;
 }
 
-function addResult(videoId, similarity, ERpost, ERbyviews, positiveCount, negativeCount) {
+function addResult(videoId, similarity, Kl, Kd, Kp, Kn, Risk) {
     var threshold = getThreshold();
     var indicator = "";
     var color = "";
@@ -15,7 +15,13 @@ function addResult(videoId, similarity, ERpost, ERbyviews, positiveCount, negati
         indicator = '<button id="clpsBtn' + videoId + '" type="button" class="btn btn-collapse" style="background-color:transparent; color:#ff0000"><i class="fas fa-arrow-down"></i></button>';
         color = "#ff0000";
         title = "Порог деструктивности превышен";
-        collapseData = '<div id="collapse' + videoId + '" class="collapse w-100">ERpost '+ERpost+'</br>ERbyviews '+ERbyviews+'</br>Положительных комментариев '+positiveCount+'</br>Отрицтельных комментариев '+negativeCount+'</div>';
+        collapseData = '<div id="collapse' + videoId +
+        '" class="collapse w-100">Коэффициент лайков: '+Kl+
+        '</br>Коэффициент дизлайков: '+Kd+
+        '</br>Коэффициент позитивных комментариев '+Kp+
+        '</br>Коэффициент отрицательных комментариев '+Kn+
+        '</br>Риск вовлечённости '+Risk+
+        '</div>';
     } else {
         indicator = '<i class="fas fa-check"></i>';
         color = "#00ff00";
@@ -62,7 +68,25 @@ function getSubResultAnalyze() {
                     var threshold = getThreshold();
                     if(similarity >= threshold)
                     {
-                        addResult(videoId, similarity,data[i].erpost, data[i].erbyviews,data[i].positive_count, data[i].negative_count);
+                    	var Kl = "невозможно определить";
+                    	var Kdl = "невозможно определить";
+                    	var Kp = "невозможно определить";
+                    	var Kn = "невозможно определить";
+                    	var Risk = "невозможно определить";
+                    	if(data[i].view_count > 0)
+                    	{
+                    		Kl = data[i].like_count/data[i].view_count;
+                    		Kdl = data[i].dislike_count/data[i].view_count;
+                    		Kp = data[i].positive_count/data[i].view_count;
+                    		Kn = data[i].negative_count/data[i].view_count;
+                    	}
+                    	if(data[i].followers_count > 0)
+                    	{
+                    		Risk = (2*data[i].like_count +
+                    				data[i].positive_count +
+                    				data[i].view_count)/data[i].followers_count;
+                    	}
+                        addResult(videoId, similarity, Kl, Kd, Kp, Kn, Risk);
                     }
                     else
                     {
