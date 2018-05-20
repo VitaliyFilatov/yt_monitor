@@ -82,11 +82,15 @@ function getSubResultAnalyze() {
                     	}
                     	if(data[i].followers_count > 0)
                     	{
-                    		Risk = (2*data[i].like_count +
-                    				data[i].positive_count +
-                    				data[i].view_count)/data[i].followers_count;
+                            var followers = +data[i].followers_count;
+                            var likeCount = +data[i].like_count
+                            var positiveCount = +data[i].positive_count;
+                            var views = +data[i].view_count;
+                    		Risk = (2*likeCount +
+                    				positiveCount +
+                    				views)/followers;
                     	}
-                        addResult(videoId, similarity, Kl, Kd, Kp, Kn, Risk);
+                        addResult(videoId, similarity, Kl, Kdl, Kp, Kn, Risk);
                     }
                     else
                     {

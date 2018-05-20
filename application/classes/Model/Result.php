@@ -55,7 +55,7 @@ class Model_Result extends Model_Base
                 `followers_count`)
 				VALUES(:sessionid, :videoid, :sim,
                 :likes, :dislikes, :positive,
-                :negative, :view, :followers)";
+                :negative, :views, :followers)";
 		$query = DB::query(Database::INSERT, $sql);
 		$query->param(':sessionid', $sessionid);
 		$query->param(':videoid', $videoid);
@@ -63,7 +63,7 @@ class Model_Result extends Model_Base
 		$query->param(':likes', $videoInfo->like_count);
 		$query->param(':dislikes', $videoInfo->dislike_count);
 		$query->param(':positive', $videoInfo->positive_count);
-		$query->param(':negative', $videoInfo->like_count);
+		$query->param(':negative', $videoInfo->negative_count);
 		$query->param(':views', $videoInfo->view_count);
 		$query->param(':followers', $videoInfo->followers_count);
 		$query->execute();

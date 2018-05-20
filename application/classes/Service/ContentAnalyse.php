@@ -102,11 +102,10 @@ class Service_ContentAnalyse
 							$strdelimeter,
 							$itemdelimeter);
 				}
-				$res = file_get_contents($filename);
 				return file_get_contents($filename);
 	}
 	
-	public static function getContentAnalyzeIstio($text)
+	protected static function getContentAnalyzeIstioService($text)
 	{
 		$ch = curl_init();
 		
@@ -183,10 +182,53 @@ class Service_ContentAnalyse
 			}
 		};
 		
+		$hash = md5($text);
+		$first_level = substr($hash, 0, 2);
+		$second_level = substr($hash, 2, 2);
+		$name = substr($hash, 4);
+		$filename = APPPATH . "content_analyze_istio/" .
+				$first_level . "/" .
+				$second_level . "/" .
+				$name .
+				".txt";
+		$name = substr($hash, 4);
+		$first_level = APPPATH . "content_analyze_istio/" .
+				$first_level;
 		
+		if(!file_exists($first_level))
+		{
+			mkdir($first_level);
+		}
+		$second_level= $first_level . "/" . $second_level;
+		if(!file_exists($second_level))
+		{
+			mkdir($second_level);
+		}
+		
+		$file = fopen($filename, "a");
+		fclose($file);
+		file_put_contents($filename, json_encode($words));
 		return $words;
 	}
 	
+	public static function getContentAnalyzeIstio($text)
+	{
+		$hash = md5($text);
+		$first_level = substr($hash, 0, 2);
+		$second_level = substr($hash, 2, 2);
+		$name = substr($hash, 4);
+		$filename = APPPATH . "content_analyze_istio/" .
+				$first_level . "/" .
+				$second_level . "/" .
+				$name .
+				".txt";
+				if(!file_exists($filename))
+				{
+					return Service_ContentAnalyse::getContentAnalyzeIstioService($text);
+				}
+				
+				return json_decode(file_get_contents($filename));
+	}
 	
 	public static function parseContentAnalize($text, $strdelimeter='\n', $itemdelimeter = ' ')
 	{

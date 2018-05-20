@@ -41,7 +41,7 @@ class Service_YTApi
     }
     
     
-    private static function execGetVideoComment($videoId, $client)
+    private static function execGetVideoComment($videoId, $client, $maxCount = -1)
     {
     	$сomments = array();
     	$pageToken = '';
@@ -56,6 +56,13 @@ class Service_YTApi
     		foreach($response->items as $item)
     		{
     			array_push($сomments, $item->snippet->topLevelComment->snippet->textDisplay);
+    		}
+    		if($maxCount > 0)
+    		{
+    			if($maxCount < count($сomments))
+    			{
+    				break;
+    			}
     		}
     		
     		if(isset($response->nextPageToken))
@@ -129,6 +136,8 @@ class Service_YTApi
         $this->client->setClientId($this->OAUTH2_CLIENT_ID);
         $this->client->setClientSecret($this->OAUTH2_CLIENT_SECRET);
         $this->client->setScopes('https://www.googleapis.com/auth/youtube');
+        $this->client->setAccessType('offline');        // offline access
+        $this->client->setIncludeGrantedScopes(true);   // incremental auth
 //          $redirect = filter_var('http://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'],
 //              FILTER_SANITIZE_URL);
         $redirect = filter_var('http://' . $_SERVER['HTTP_HOST'] . "/" . $path);
@@ -169,7 +178,7 @@ class Service_YTApi
         }
     }
     
-    private function useService($session, $exec, $arg1, $arg2)
+    private function useService($session, $exec, $arg1, $arg2, $arg3 = null)
     {
     	if ($this->client->getAccessToken()) {
     		try {
@@ -177,7 +186,7 @@ class Service_YTApi
     			$videoIds = array();
     			$pageToken = '';
     			
-    			$htmlBody = call_user_func($exec, $arg1, $arg2);
+    			$htmlBody = call_user_func($exec, $arg1, $arg2, $arg3);
     			
     		} catch (Google_Service_Exception $e) {
     			$htmlBody = sprintf('<p>A service error occurred: <code>%s</code></p>',
@@ -198,7 +207,7 @@ class Service_YTApi
     			$htmlBody = new Entity_ReturnResult(1, $htmlBody);
     		}
     		
-    		$session->set($this->tokenSessionKey, $this->client->getAccessToken());
+    		//$session->set($this->tokenSessionKey, $this->client->getAccessToken());
     	}
     	if($htmlBody->return_type === 1)
     	{
@@ -212,9 +221,9 @@ class Service_YTApi
     	return $this->useService($session, "Service_YTApi::execGetChannelsVideo", $channelId, $this);
     }
     
-    public function getVideoComment($session, $videoId)
+    public function getVideoComment($session, $videoId, $maxCount = -1)
     {
-    	return $this->useService($session, "Service_YTApi::execGetVideoComment", $videoId, $this);
+    	return $this->useService($session, "Service_YTApi::execGetVideoComment", $videoId, $this, $maxCount);
     }
 
     public function getVideoStatistics($session, $videoId)

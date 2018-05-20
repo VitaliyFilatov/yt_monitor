@@ -6,6 +6,8 @@ class Service_Pattern
 	private static $sentThreshold = 0.77;
 	
 	private static $max_timeout = 10;
+	
+	private static $sample_size = 385;
     
     
     static function getStatistics($arrayStats)
@@ -300,6 +302,12 @@ class Service_Pattern
     		return $result;
     	}
     	$videoInfo = new Entity_VideoInfo();
+    	$commentCount = $videoStatistics->commentCount;
+    	if($commentCount > Service_Pattern::$sample_size)
+    	{
+    		$sumpos = $sumpos*$commentCount/Service_Pattern::$sample_size;
+    		$sumneg = $sumneg*$commentCount/Service_Pattern::$sample_size;
+    	}
     	$videoInfo->like_count = $videoStatistics->likeCount;
     	$videoInfo->dislike_count = $videoStatistics->dislikeCount;
     	$videoInfo->positive_count = $sumpos;
@@ -386,6 +394,11 @@ class Service_Pattern
     						$videoInfo);
     			}
     			else {
+    				if($video['videoId']== "9MHqpyN6iAk")
+    				{
+    					$var = 0;
+    					$var++;
+    				}
     				Model_Result::addResult($sessionid, $video['videoId'], $sim);
     			}
     		}
@@ -523,14 +536,14 @@ class Service_Pattern
     {
     	try
     	{
-    		$htmlBody = Service_VideoComments::getVideoComments($request, $session, $videoId);
+    		$htmlBody = Service_VideoComments::getVideoComments($request, $session, $videoId, Service_Pattern::$sample_size);
     		$sentiment = array();
     		foreach($htmlBody->result as $i=>$comment)
     		{
-//     			if($i>=100)
-//     			{
-//     				break;
-//     			}
+    			if($i > Service_Pattern::$sample_size)
+    			{
+    				break;
+    			}
     			$isStop = Service_Pattern::isStop($sessionid);
     			if($isStop->return_type === 3)
     			{
